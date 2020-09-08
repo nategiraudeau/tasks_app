@@ -1,12 +1,186 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:tasks_app/src/database/task.dart';
+import 'package:tasks_app/src/database/tasks_database.dart';
 import 'package:tasks_app/src/tasks.dart';
-import 'package:uuid/uuid.dart';
 
 class TaskNotifier with ChangeNotifier {
   List<Task> _tasks = [];
+  List<Task> _previousTasks = [];
+
+  Timer _dbTimer;
+
+  /// The list of task ids that have been changed. It is a
+  /// [Set] so that the database is not updated twice for
+  /// something that should have only required the database
+  /// to update once.
+  Set<String> _changedTasks = Set();
+
+  /// The list of task ids that have been created. It is a
+  /// [Set] just to be safe.
+  Set<String> _newTasks = Set();
+
+  /// The list of task ids that have been removed. It is a
+  /// [Set] just to be safe.
+  Set<String> _removedTasks = Set();
+
+  static final _db = TasksDatabase.instance;
+
+  /// Creates a new [TaskNotifier]
+  TaskNotifier() {
+    init();
+  }
+
+  var _ready = false;
+
+  bool get ready => _ready;
+
+  Future<void> init() async {
+    final loadedTasks = await _db.loadTasks();
+
+    _tasks = loadedTasks ?? _tasks;
+
+    _previousTasks = loadedTasks.toList() ?? [];
+
+    final twoSec = const Duration(seconds: 2);
+    _dbTimer = Timer.periodic(twoSec, (_) => _syncWithDatabase());
+
+    _ready = true;
+
+    notifyListeners();
+  }
+
+  Future<void> _syncWithDatabase() async {
+    if (_changedTasks.length <= 0 &&
+        _newTasks.length <= 0 &&
+        _removedTasks.length <= 0) return;
+
+    print(
+      '${_changedTasks.length} task(s) have been changed since last update',
+    );
+    print(
+      '${_newTasks.length} task(s) have been created since last update',
+    );
+    print(
+      '${_removedTasks.length} task(s) have been removed since last update',
+    );
+
+    for (final changedId in _changedTasks) {
+      try {
+        final changedTask = _tasks.firstWhere((task) => task.id == changedId);
+
+        await _db.updateTask(changedTask);
+      } on StateError catch (e) {
+        print(e);
+      }
+    }
+
+    _changedTasks = Set();
+
+    for (final newId in _newTasks) {
+      try {
+        final newTask = _tasks.firstWhere((task) => task.id == newId);
+
+        await _db.insertTask(newTask);
+      } on StateError catch (e) {
+        print(e);
+      }
+    }
+
+    _newTasks = Set();
+
+    for (final removedId in _removedTasks) {
+      try {
+        await _db.deleteTask(removedId);
+      } on StateError catch (e) {
+        print(e);
+      }
+    }
+
+    _removedTasks = Set();
+  }
 
   String _selected;
+
+  var _updating = false;
+
+  /// Notifies listeners and sends the update to the changes
+  /// list to be added to the database.
+  void _updateData() async {
+    if (_updating) return;
+
+    _updating = true;
+
+    final previousTasks = _previousTasks;
+
+    var previousTasksUpdated = <Task>[];
+    var removed = <String>[];
+    var changed = <String>[];
+    var created = <String>[];
+
+    notifyListeners();
+
+    await Future.delayed(Duration(milliseconds: 200));
+
+    // Add changed tasks and new to the list of tasks to be updated
+    for (int i = 0; i < _tasks.length; i++) {
+      final task = _tasks[i];
+
+      var isNew = true;
+      var isChanged = false;
+
+      for (final previousTask in previousTasks) {
+        if (previousTask.id == task.id) {
+          isNew = false;
+
+          if (!previousTask.equals(task)) {
+            isChanged = true;
+          }
+
+          if (previousTask.category != task.category) {
+            isChanged = true;
+          }
+        }
+      }
+
+      if (isNew) {
+        created.add(task.id);
+      } else if (isChanged) {
+        changed.add(task.id);
+      }
+
+      previousTasksUpdated.add(
+        Task(name: task.name, category: task.category)
+          ..id = task.id
+          ..isSnapshot = true,
+      );
+    }
+
+    // remove tasks from database
+    for (final previousTask in previousTasks) {
+      var remove = true;
+
+      for (final task in _tasks) {
+        if (task.id == previousTask.id) {
+          remove = false;
+        }
+      }
+
+      if (remove) {
+        removed.add(previousTask.id);
+      }
+    }
+
+    _changedTasks.addAll(changed);
+    _newTasks.addAll(created);
+    _removedTasks.addAll(removed);
+
+    _updating = false;
+
+    _previousTasks = previousTasksUpdated;
+  }
 
   void selectTask(String id) {
     _selected = id;
@@ -23,7 +197,7 @@ class TaskNotifier with ChangeNotifier {
 
     _tasks.removeWhere((task) => task.id == _selected);
 
-    notifyListeners();
+    _updateData();
   }
 
   void renameTask(String name, {@required String taskId}) {
@@ -38,7 +212,7 @@ class TaskNotifier with ChangeNotifier {
 
     _tasks[index] = newTask;
 
-    notifyListeners();
+    _updateData();
   }
 
   List<Task> get tasks => _tasks;
@@ -58,7 +232,8 @@ class TaskNotifier with ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
-    notifyListeners();
+    print(_previousTasks);
+    _updateData();
   }
 
   void setTaskCategory(String id, TaskCategory category) {
@@ -66,9 +241,10 @@ class TaskNotifier with ChangeNotifier {
 
     final index = _tasks.indexWhere((task) => task.id == id);
     if (index != -1) {
-      _tasks[index] = _tasks[index]..category = category;
-      notifyListeners();
+      _tasks[index].category = category;
     }
+
+    _updateData();
   }
 
   static TaskNotifier of(BuildContext context, {bool listen = true}) {
@@ -76,21 +252,10 @@ class TaskNotifier with ChangeNotifier {
 
     return Provider.of<TaskNotifier>(context, listen: listen);
   }
-}
 
-class Task {
-  static final _uuid = Uuid();
-
-  String name;
-  TaskCategory category;
-  String id;
-
-  Task.rename(Task task, this.name) {
-    this.id = task.id;
-    this.category = task.category;
-  }
-
-  Task({this.name, this.category = TaskCategory.incomplete}) {
-    this.id = _uuid.v1();
+  @override
+  void dispose() {
+    _dbTimer?.cancel();
+    super.dispose();
   }
 }

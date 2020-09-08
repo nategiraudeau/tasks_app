@@ -9,11 +9,24 @@ import 'package:tasks_app/src/widgets/menu.dart';
 
 import 'tasks.dart';
 
-class TasksApp extends StatelessWidget {
+class TasksApp extends StatefulWidget {
+  @override
+  _TasksAppState createState() => _TasksAppState();
+}
+
+class _TasksAppState extends State<TasksApp> {
+  TaskNotifier _notifier;
+
+  @override
+  void initState() {
+    _notifier = TaskNotifier();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<TaskNotifier>.value(
-      value: TaskNotifier(),
+      value: _notifier,
       child: MaterialApp(
         theme: AppTheme.themeData,
         routes: {
@@ -37,6 +50,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController _slideAnim;
   AnimationController _contentAnim;
+  AnimationController _splashAnim;
 
   var _pageController = PageController();
   var _drawerPageController = PageController(
@@ -44,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   );
 
   var _isShowingDrawer = false;
+  var _hasAnimated = false;
 
   int _currentIndex = 0;
 
@@ -95,6 +110,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     assert(widget.animate != null);
 
+    _splashAnim = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 700),
+      value: widget.animate ? 0 : 1,
+    );
     _slideAnim = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 700),
@@ -105,8 +125,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: Duration(milliseconds: 700),
       value: widget.animate ? 0 : 1,
     );
-
-    if (widget.animate) _startAnimation();
 
     _pageController.addListener(_handleChangeTab);
     _drawerPageController.addListener(_handleShowDrawer);
@@ -129,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _startAnimation() async {
     try {
+      _splashAnim.forward();
       await Future.delayed(Duration(milliseconds: 500));
       _slideAnim.forward();
       await Future.delayed(Duration(milliseconds: 100));
@@ -138,176 +157,217 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (context) {
-        final slideUpTween = Tween<Offset>(
-          begin: Offset(0, 0.3),
-          end: Offset.zero,
-        ).chain(CurveTween(
-          curve: ElasticOutCurve(0.9),
-        ));
+    final notifier = TaskNotifier.of(context);
 
-        return Scaffold(
-          body: PageView(
-            controller: _drawerPageController,
-            physics: _isShowingDrawer
-                ? ClampingScrollPhysics()
-                : NeverScrollableScrollPhysics(),
-            children: [
-              TasksAppDrawer(
-                close: _closeDrawer,
-              ),
-              Scaffold(
-                body: Stack(
-                  children: <Widget>[
-                    FadeTransition(
-                      opacity: _slideAnim,
-                      child: SlideTransition(
-                        position: _slideAnim.drive(slideUpTween),
-                        child: PageView(
-                          controller: _pageController,
-                          children: <Widget>[
-                            Overview(
-                              animate: widget.animate,
-                              goToTasks: () {
-                                _changeTab(1);
-                              },
-                            ),
-                            Tasks(),
-                          ],
-                        ),
-                      ),
+    final ready = notifier?.ready ?? false;
+
+    return Stack(
+      children: [
+        Scaffold(),
+        AnimatedSwitcher(
+          duration: Duration(milliseconds: 800),
+          switchInCurve: Curves.ease,
+          switchOutCurve: Curves.ease,
+          child: Builder(
+            key: ValueKey(ready),
+            builder: (context) {
+              if (!ready) {
+                return Container();
+              }
+
+              if (widget.animate && !_hasAnimated) _startAnimation();
+
+              final slideUpTween = Tween<Offset>(
+                begin: Offset(0, 0.3),
+                end: Offset.zero,
+              ).chain(CurveTween(
+                curve: ElasticOutCurve(0.9),
+              ));
+
+              return Scaffold(
+                body: PageView(
+                  controller: _drawerPageController,
+                  physics: _isShowingDrawer
+                      ? ClampingScrollPhysics()
+                      : NeverScrollableScrollPhysics(),
+                  children: [
+                    TasksAppDrawer(
+                      close: _closeDrawer,
                     ),
-                    AnimatedPositioned(
-                      duration: Duration(
-                          milliseconds: _currentIndex == 1 ? 800 : 500),
-                      curve: _currentIndex == 1
-                          ? Curves.elasticOut
-                          : Curves.easeOutCirc,
-                      bottom: _currentIndex == 1 ? 24 : -60,
-                      right: 24,
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        width: _currentIndex == 1 ? 56 : 40,
-                        height: _currentIndex == 1 ? 56 : 40,
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        child: Material(
-                          elevation: 20,
-                          color: AppTheme.mainColor,
-                          borderRadius: BorderRadius.circular(20),
-                          shadowColor: AppTheme.mainColor.withOpacity(0.6),
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: () {
-                              createTask(context);
-                            },
-                            highlightColor: Colors.white12,
-                            child: Center(
-                              child: Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: 27,
+                    Scaffold(
+                      body: Stack(
+                        children: <Widget>[
+                          FadeTransition(
+                            opacity: _slideAnim,
+                            child: SlideTransition(
+                              position: _slideAnim.drive(slideUpTween),
+                              child: PageView(
+                                controller: _pageController,
+                                children: <Widget>[
+                                  Overview(
+                                    animate: widget.animate,
+                                    goToTasks: () {
+                                      _changeTab(1);
+                                    },
+                                  ),
+                                  Tasks(),
+                                ],
                               ),
                             ),
-                            splashColor: Colors.white24,
                           ),
-                        ),
-                      ),
-                    ),
+                          AnimatedPositioned(
+                            duration: Duration(
+                                milliseconds: _currentIndex == 1 ? 800 : 500),
+                            curve: _currentIndex == 1
+                                ? Curves.elasticOut
+                                : Curves.easeOutCirc,
+                            bottom: _currentIndex == 1 ? 24 : -60,
+                            right: 24,
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              width: _currentIndex == 1 ? 56 : 40,
+                              height: _currentIndex == 1 ? 56 : 40,
+                              curve: Curves.fastLinearToSlowEaseIn,
+                              child: Material(
+                                elevation: 20,
+                                color: AppTheme.mainColor,
+                                borderRadius: BorderRadius.circular(20),
+                                shadowColor:
+                                    AppTheme.mainColor.withOpacity(0.6),
+                                clipBehavior: Clip.antiAlias,
+                                child: InkWell(
+                                  onTap: () {
+                                    createTask(context);
+                                  },
+                                  highlightColor: Colors.white12,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 27,
+                                    ),
+                                  ),
+                                  splashColor: Colors.white24,
+                                ),
+                              ),
+                            ),
+                          ),
 
-                    // Menu button
-                    Row(
-                      children: [
-                        Material(
-                          color: Colors.transparent,
-                          child: SafeArea(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 58,
-                                  width: 58,
-                                  child: AnimatedOpacity(
-                                    opacity: 1,
-                                    duration: Duration(milliseconds: 200),
-                                    child: Material(
-                                      color: Colors.white.withOpacity(0.85),
-                                      borderRadius: BorderRadius.horizontal(
-                                        right: Radius.circular(40),
-                                      ),
-                                      child: Material(
-                                        borderRadius: BorderRadius.circular(40),
-                                        clipBehavior: Clip.antiAlias,
-                                        color: Colors.transparent,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: IconButton(
-                                            icon: Icon(FeatherIcons.menu),
-                                            color: Colors.black87,
-                                            onPressed: () {
-                                              _showDrawer();
-                                            },
+                          // Menu button
+                          Row(
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                child: SafeArea(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        height: 58,
+                                        width: 58,
+                                        child: AnimatedOpacity(
+                                          opacity: 1,
+                                          duration: Duration(milliseconds: 200),
+                                          child: Material(
+                                            color:
+                                                Colors.white.withOpacity(0.85),
+                                            borderRadius:
+                                                BorderRadius.horizontal(
+                                              right: Radius.circular(40),
+                                            ),
+                                            child: Material(
+                                              borderRadius:
+                                                  BorderRadius.circular(40),
+                                              clipBehavior: Clip.antiAlias,
+                                              color: Colors.transparent,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: IconButton(
+                                                  icon: Icon(FeatherIcons.menu),
+                                                  color: Colors.black87,
+                                                  onPressed: () {
+                                                    _showDrawer();
+                                                  },
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                      SizedBox(
+                                        width: 12,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 12,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      bottomNavigationBar: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Divider(
+                            height: 0,
+                            color: Colors.black.withOpacity(0.04),
+                            thickness: 2,
+                          ),
+                          SafeArea(
+                            child: SizedBox(
+                              height: 80,
+                              child: Material(
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 25,
+                                    vertical: 4,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: <Widget>[
+                                      buildNavbarIcon(
+                                        FeatherIcons.home,
+                                        selected: _currentIndex == 0,
+                                        onPressed: () => _changeTab(0),
+                                      ),
+                                      buildNavbarIcon(
+                                        FeatherIcons.edit3,
+                                        selected: _currentIndex == 1,
+                                        onPressed: () => _changeTab(1),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                bottomNavigationBar: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Divider(
-                      height: 0,
-                      color: Colors.black.withOpacity(0.04),
-                      thickness: 2,
-                    ),
-                    SafeArea(
-                      child: SizedBox(
-                        height: 80,
-                        child: Material(
-                          color: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 25,
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                buildNavbarIcon(
-                                  FeatherIcons.home,
-                                  selected: _currentIndex == 0,
-                                  onPressed: () => _changeTab(0),
-                                ),
-                                buildNavbarIcon(
-                                  FeatherIcons.edit3,
-                                  selected: _currentIndex == 1,
-                                  onPressed: () => _changeTab(1),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        );
-      },
+        ),
+        SlideTransition(
+          position: _splashAnim.drive(
+            Tween(
+              begin: Offset.zero,
+              end: Offset(0, -1),
+            ).chain(
+              CurveTween(curve: Curves.easeInOutExpo),
+            ),
+          ),
+          child: Scaffold(
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+        ),
+      ],
     );
   }
 }

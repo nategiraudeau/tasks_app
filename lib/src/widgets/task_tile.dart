@@ -2,6 +2,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:tasks_app/src/database/task.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
@@ -608,6 +609,13 @@ class __SelectedActionsState extends State<_SelectedActions>
     _startAnim();
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _deleteAnim.dispose();
+    _closeAnim.dispose();
+    super.dispose();
   }
 
   @override

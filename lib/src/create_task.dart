@@ -1,3 +1,4 @@
+import 'package:tasks_app/src/database/task.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
