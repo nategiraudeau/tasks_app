@@ -105,7 +105,7 @@ class _OverviewState extends State<Overview>
                                 width: 8,
                               ),
                               Text(
-                                '${taskNotifier.tasks.length}',
+                                '${(taskNotifier?.incomplete?.length ?? 0) + (taskNotifier?.inProgress?.length ?? 0)}',
                                 style: TextStyle(
                                   color: AppTheme.mainColor.withOpacity(0.8),
                                 ),
@@ -270,10 +270,16 @@ class _OverviewState extends State<Overview>
               //           },
               //         ),
               //       ),
-              CountOverview(
-                contentAnim2: _contentAnim2,
-                slideUpTween: slideUpTween2,
-                taskNotifier: taskNotifier,
+              FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: _contentAnim2,
+                  curve: Curves.ease,
+                ),
+                child: CountOverview(
+                  contentAnim2: _contentAnim2,
+                  slideUpTween: slideUpTween2,
+                  taskNotifier: taskNotifier,
+                ),
               ),
             ],
           ),

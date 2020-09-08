@@ -201,8 +201,10 @@ class _TasksState extends State<Tasks> with AutomaticKeepAliveClientMixin {
                       );
                     }
 
-                    return Column(
-                      children: tiles,
+                    return SystemPadding(
+                      child: Column(
+                        children: tiles,
+                      ),
                     );
                   },
                 ),

@@ -80,16 +80,16 @@ class _CategoryListState extends State<_CategoryList>
     }
 
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 400),
-        child: Builder(
-          builder: (context) {
-            if (tasks == null) return Scaffold();
+      body: SafeArea(
+        child: AnimatedSwitcher(
+          duration: Duration(milliseconds: 400),
+          child: Builder(
+            builder: (context) {
+              if (tasks == null) return Scaffold();
 
-            return Column(
-              children: [
-                SafeArea(
-                  child: SizedBox(
+              return Column(
+                children: [
+                  SizedBox(
                     height: 52,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -141,37 +141,50 @@ class _CategoryListState extends State<_CategoryList>
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      SafeArea(
-                        child: Builder(builder: (context) {
-                          var tiles = <Widget>[];
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        final notifier =
+                            TaskNotifier.of(context, listen: false);
 
-                          for (int i = 0; i < tasks.length; i++) {
-                            final task = tasks[i];
+                        notifier?.unselect();
+                      },
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Builder(builder: (context) {
+                            var tiles = <Widget>[];
 
-                            tiles.add(
-                              TaskTile(
-                                task,
-                                index: i,
-                                visible: task.category == widget.category,
-                              ),
+                            for (int i = 0; i < tasks.length; i++) {
+                              final task = tasks[i];
+
+                              tiles.add(
+                                TaskTile(
+                                  task,
+                                  index: i,
+                                  visible: task.category == widget.category,
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              children: tiles,
                             );
-                          }
-
-                          return Column(
-                            children: tiles,
-                          );
-                        }),
+                          }),
+                          SizedBox(
+                            height: 100,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

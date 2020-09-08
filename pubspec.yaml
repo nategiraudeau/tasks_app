@@ -33,11 +33,14 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/launch_icon.png"
+  image_path: "assets/launch_icon_white.png"
 
 flutter:
 
   uses-material-design: true
+
+  assets:
+    - assets/icon-green.png
 
   fonts:
     - family: Gellix

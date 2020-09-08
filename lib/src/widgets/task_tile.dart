@@ -36,7 +36,7 @@ class _TaskTileState extends State<TaskTile> with TickerProviderStateMixin {
   Future<void> _startEntry() async {
     await Future.delayed(
       Duration(
-        milliseconds: ((widget.index ?? 0) * 40),
+        milliseconds: ((widget.index ?? 0) * 52),
       ),
     );
 

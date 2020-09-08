@@ -13,6 +13,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       elevation: 0.0,
       color: Colors.white70,
+      centerTitle: true,
       textTheme: TextTheme(
         headline6: TextStyle(
           fontFamily: 'Gellix',

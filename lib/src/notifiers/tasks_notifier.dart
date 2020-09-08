@@ -42,10 +42,21 @@ class TaskNotifier with ChangeNotifier {
 
     _tasks = loadedTasks ?? _tasks;
 
-    _previousTasks = loadedTasks.toList() ?? [];
+    // Insures that the previous tasks are not linked to the real tasks
+    _previousTasks = loadedTasks
+            ?.map(
+              (task) => Task(
+                category: task.category,
+                name: task.name,
+              )
+                ..id = task.id
+                ..isSnapshot = true,
+            )
+            ?.toList() ??
+        [];
 
-    final twoSec = const Duration(seconds: 2);
-    _dbTimer = Timer.periodic(twoSec, (_) => _syncWithDatabase());
+    final duration = const Duration(milliseconds: 1500);
+    _dbTimer = Timer.periodic(duration, (_) => _syncWithDatabase());
 
     _ready = true;
 
@@ -67,7 +78,10 @@ class TaskNotifier with ChangeNotifier {
       '${_removedTasks.length} task(s) have been removed since last update',
     );
 
-    for (final changedId in _changedTasks) {
+    final changedTasks = _changedTasks;
+    _changedTasks = Set();
+
+    for (final changedId in changedTasks) {
       try {
         final changedTask = _tasks.firstWhere((task) => task.id == changedId);
 
@@ -77,9 +91,10 @@ class TaskNotifier with ChangeNotifier {
       }
     }
 
-    _changedTasks = Set();
+    final newTasks = _newTasks;
+    _newTasks = Set();
 
-    for (final newId in _newTasks) {
+    for (final newId in newTasks) {
       try {
         final newTask = _tasks.firstWhere((task) => task.id == newId);
 
@@ -89,17 +104,16 @@ class TaskNotifier with ChangeNotifier {
       }
     }
 
-    _newTasks = Set();
+    final removedTasks = _removedTasks;
+    _removedTasks = Set();
 
-    for (final removedId in _removedTasks) {
+    for (final removedId in removedTasks) {
       try {
         await _db.deleteTask(removedId);
       } on StateError catch (e) {
         print(e);
       }
     }
-
-    _removedTasks = Set();
   }
 
   String _selected;
@@ -109,11 +123,12 @@ class TaskNotifier with ChangeNotifier {
   /// Notifies listeners and sends the update to the changes
   /// list to be added to the database.
   void _updateData() async {
-    if (_updating) return;
+    if (_updating) {
+      print('already updating - ignoring update request');
+      return;
+    }
 
     _updating = true;
-
-    final previousTasks = _previousTasks;
 
     var previousTasksUpdated = <Task>[];
     var removed = <String>[];
@@ -121,6 +136,8 @@ class TaskNotifier with ChangeNotifier {
     var created = <String>[];
 
     notifyListeners();
+
+    print('notified listeners');
 
     await Future.delayed(Duration(milliseconds: 200));
 
@@ -131,7 +148,7 @@ class TaskNotifier with ChangeNotifier {
       var isNew = true;
       var isChanged = false;
 
-      for (final previousTask in previousTasks) {
+      for (final previousTask in _previousTasks) {
         if (previousTask.id == task.id) {
           isNew = false;
 
@@ -159,7 +176,7 @@ class TaskNotifier with ChangeNotifier {
     }
 
     // remove tasks from database
-    for (final previousTask in previousTasks) {
+    for (final previousTask in _previousTasks) {
       var remove = true;
 
       for (final task in _tasks) {
@@ -232,7 +249,6 @@ class TaskNotifier with ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
-    print(_previousTasks);
     _updateData();
   }
 

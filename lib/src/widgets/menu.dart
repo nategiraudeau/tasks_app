@@ -68,6 +68,8 @@ class TasksAppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifier = TaskNotifier.of(context);
+
     return Row(
       children: [
         Expanded(
@@ -78,31 +80,46 @@ class TasksAppDrawer extends StatelessWidget {
                   SizedBox(
                     height: 20,
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Tasks App',
-                          style:
-                              Theme.of(context).appBarTheme.textTheme.headline6,
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 32,
+                      ),
+                      SizedBox(
+                        width: 32,
+                        child: Image.asset('assets/icon-green.png'),
+                      ),
+                      SizedBox(
+                        width: 16,
+                      ),
+                      Text(
+                        'Tasks App',
+                        style:
+                            Theme.of(context).appBarTheme.textTheme.headline6,
+                      ),
+                      Spacer(),
+                      IconButton(
+                        iconSize: 24,
+                        icon: Icon(
+                          FeatherIcons.arrowRight,
                         ),
-                        Spacer(),
-                        IconButton(
-                          iconSize: 24,
-                          icon: Icon(
-                            FeatherIcons.arrowRight,
-                          ),
-                          onPressed: close ??
-                              () {
-                                Navigator.pop(context);
-                              },
-                        ),
-                      ],
-                    ),
+                        onPressed: close ??
+                            () {
+                              Navigator.pop(context);
+                            },
+                      ),
+                      SizedBox(
+                        width: 32,
+                      ),
+                    ],
                   ),
                   SizedBox(
-                    height: 12,
+                    height: 8,
+                  ),
+                  Divider(
+                    height: 18,
+                    indent: 28,
+                    endIndent: 36,
                   ),
                   Builder(
                     builder: (context) {
@@ -149,6 +166,22 @@ class TasksAppDrawer extends StatelessWidget {
                       );
                     },
                   ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Divider(
+                    height: 18,
+                    indent: 28,
+                    endIndent: 36,
+                  ),
+                  _MenuItem(
+                    'Dark Mode',
+                    index: links.length + 1,
+                    trailing: Switch(
+                      value: false,
+                      onChanged: (value) {},
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -168,10 +201,17 @@ class _MenuItem extends StatefulWidget {
   final int index;
   final int count;
   final Color color;
+  final Widget trailing;
 
-  const _MenuItem(this.title,
-      {Key key, this.onPressed, this.index = 0, this.count, this.color})
-      : super(key: key);
+  const _MenuItem(
+    this.title, {
+    Key key,
+    this.onPressed,
+    this.index = 0,
+    this.count,
+    this.color,
+    this.trailing,
+  }) : super(key: key);
 
   @override
   __MenuItemState createState() => __MenuItemState();
@@ -217,31 +257,37 @@ class __MenuItemState extends State<_MenuItem>
       ),
     );
 
-    return SlideTransition(
-      position: _entryAnim.drive(tween),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 32),
-        onTap: widget.count <= 0 ? null : widget.onPressed,
-        title: Row(
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: 32),
+      onTap:
+          widget.count != null && widget.count <= 0 ? null : widget.onPressed,
+      title: SlideTransition(
+        position: _entryAnim.drive(tween),
+        child: Row(
           children: [
             Text(
               widget.title ?? '',
               style: TextStyle(
-                color: widget.count <= 0 ? Colors.black38 : Colors.black,
+                color: widget.count != null && widget.count <= 0
+                    ? Colors.black38
+                    : Colors.black,
               ),
             ),
             SizedBox(
               width: 16,
             ),
-            Text(
-              '${widget.count ?? 0}',
-              style: TextStyle(
-                color: widget.color,
-              ),
-            ),
+            widget.count == null
+                ? Container()
+                : Text(
+                    '${widget?.count ?? 0}',
+                    style: TextStyle(
+                      color: widget.color,
+                    ),
+                  ),
           ],
         ),
       ),
+      trailing: widget.trailing,
     );
   }
 }
