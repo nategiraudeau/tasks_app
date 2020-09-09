@@ -43,6 +43,8 @@ class _CreateTaskPageState extends State<CreateTaskPage>
 
     _focusOnStart();
 
+    _focusNode.addListener(_handleFocusChange);
+
     super.initState();
   }
 
@@ -51,15 +53,23 @@ class _CreateTaskPageState extends State<CreateTaskPage>
     _focusNode.requestFocus();
   }
 
+  void _handleFocusChange() => setState(() {});
+
   @override
   void dispose() {
     _slideUpAnim.dispose();
     _focusNode.unfocus();
+    _focusNode.removeListener(_handleFocusChange);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = Theme.of(context).primaryColor;
+
+    final isDark = TaskNotifier.of(context)?.isDark ?? false;
+
     return SafeArea(
       child: SystemPadding(
         child: Column(
@@ -85,9 +95,14 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                     child: Padding(
                       padding: EdgeInsets.all(20),
                       child: Material(
-                        elevation: 52,
+                        elevation: isDark ? 0 : 52,
                         shadowColor: Colors.black12,
-                        color: Colors.white,
+                        color: isDark
+                            ? Color.alphaBlend(
+                                Colors.white10,
+                                AppTheme.dark2,
+                              )
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -102,7 +117,12 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                               Text(
                                 'Create Task',
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline5,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline5
+                                    .copyWith(
+                                      color: colorScheme.onSurface,
+                                    ),
                               ),
                               SizedBox(
                                 height: 20,
@@ -110,7 +130,7 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                               SizedBox(
                                 height: 60,
                                 child: TextField(
-                                  cursorColor: Colors.black,
+                                  cursorColor: colorScheme.onBackground,
                                   focusNode: _focusNode,
                                   onChanged: (value) {
                                     setState(() {
@@ -120,8 +140,21 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                       _taskName = value;
                                     });
                                   },
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground,
+                                  ),
                                   decoration: InputDecoration(
                                     labelText: 'Task Name',
+                                    labelStyle: isDark
+                                        ? TextStyle(
+                                            color: _focusNode.hasFocus
+                                                ? Color.alphaBlend(
+                                                    Colors.white24, primary)
+                                                : null,
+                                          )
+                                        : null,
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20,
                                       vertical: 20,
@@ -129,10 +162,21 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
+                                    focusedBorder: isDark
+                                        ? OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            borderSide: BorderSide(
+                                              color: primary.withOpacity(0.5),
+                                              width: 2,
+                                            ),
+                                          )
+                                        : null,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: colorScheme.onBackground
+                                            .withOpacity(0.1),
                                         width: 2,
                                       ),
                                     ),
@@ -150,7 +194,12 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                 child: Text(
                                   'Please enter a name for this task.',
                                   style: TextStyle(
-                                    color: Colors.redAccent[400],
+                                    color: isDark
+                                        ? Color.alphaBlend(
+                                            Colors.white30,
+                                            Colors.pinkAccent[400],
+                                          )
+                                        : Colors.redAccent[400],
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -177,13 +226,18 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                       'In Progress',
                                       style: TextStyle(
                                         color: _inProgress
-                                            ? Colors.black
-                                            : Colors.black.withOpacity(0.7),
+                                            ? colorScheme.onSurface
+                                            : isDark
+                                                ? Colors.cyan[50]
+                                                    .withOpacity(0.7)
+                                                : colorScheme.onSurface
+                                                    .withOpacity(0.7),
                                       ),
                                     ),
                                     trailing: Checkbox(
                                       activeColor: AppTheme.mainColor,
                                       value: _inProgress,
+                                      checkColor: colorScheme.background,
                                       onChanged: (value) {
                                         _focusNode.unfocus();
                                         setState(
@@ -202,12 +256,16 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                 child: Material(
                                   borderRadius: BorderRadius.circular(12),
                                   elevation: 20,
-                                  shadowColor:
-                                      AppTheme.mainColor.withOpacity(0.5),
+                                  shadowColor: isDark
+                                      ? Colors.black12
+                                      : AppTheme.mainColor.withOpacity(0.5),
                                   color: AppTheme.mainColor,
+                                  clipBehavior: Clip.antiAlias,
                                   child: InkWell(
-                                    splashColor: Colors.white24,
-                                    highlightColor: Colors.white12,
+                                    splashColor: colorScheme.background
+                                        .withOpacity(0.24),
+                                    highlightColor: colorScheme.background
+                                        .withOpacity(0.12),
                                     onTap: () {
                                       if (_taskName.isEmpty) {
                                         setState(() {
@@ -238,7 +296,7 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                             .textTheme
                                             .subtitle1
                                             .copyWith(
-                                              color: Colors.white,
+                                              color: colorScheme.background,
                                               letterSpacing: 0.4,
                                             ),
                                       ),
@@ -283,7 +341,8 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                               width: 24,
                               height: 24,
                               child: Material(
-                                color: Colors.grey[300],
+                                color:
+                                    isDark ? AppTheme.dark2 : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(12),
                                 child: Center(
                                   child: Icon(

@@ -70,13 +70,18 @@ class _TasksState extends State<Tasks> with AutomaticKeepAliveClientMixin {
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style:
+                                Theme.of(context).textTheme.subtitle1.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground,
+                                    ),
                             children: <InlineSpan>[
                               TextSpan(
                                 text: 'You don\'t have any tasks yet. ',
                               ),
                               TextSpan(
-                                text: 'Create One',
+                                text: '\nCreate One',
                                 style: TextStyle(
                                   color: AppTheme.mainColor,
                                   decoration: TextDecoration.underline,
@@ -280,6 +285,8 @@ class __CompletedAllTasksMessageState extends State<_CompletedAllTasksMessage>
       ),
     );
 
+    final isDark = TaskNotifier.of(context)?.isDark ?? false;
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: 56,
@@ -304,7 +311,9 @@ class __CompletedAllTasksMessageState extends State<_CompletedAllTasksMessage>
                 children: [
                   Text(
                     'Great Job!',
-                    style: Theme.of(context).textTheme.subtitle1,
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(
@@ -327,7 +336,12 @@ class __CompletedAllTasksMessageState extends State<_CompletedAllTasksMessage>
                             'You\'ve finished all your tasks.',
                             style:
                                 Theme.of(context).textTheme.bodyText1.copyWith(
-                                      color: Colors.black54,
+                                      color: isDark
+                                          ? Colors.white60
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onBackground
+                                              .withOpacity(0.45),
                                     ),
                             textAlign: TextAlign.center,
                           ),
@@ -368,6 +382,7 @@ class TaskCategoryChip extends StatelessWidget {
     final fontSize = 18.0;
     final isBig = MediaQuery.of(context).size.width >= 500;
     final aintTappable = (count ?? 0) <= 0;
+    final isDark = TaskNotifier.of(context)?.isDark ?? false;
 
     return Expanded(
       child: AnimatedSwitcher(
@@ -381,7 +396,10 @@ class TaskCategoryChip extends StatelessWidget {
             border: aintTappable
                 ? Border.all(
                     width: 2,
-                    color: Colors.black.withOpacity(0.07),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onBackground
+                        .withOpacity(0.07),
                   )
                 : null,
             borderRadius: BorderRadius.circular(28),
@@ -405,8 +423,10 @@ class TaskCategoryChip extends StatelessWidget {
                   ),
                   child: DefaultTextStyle(
                     style: TextStyle(
-                      color: (count ?? 0) <= 0 ? color.withOpacity(0.5) : color,
-                      fontWeight: FontWeight.w700,
+                      color: !isBig && isDark && (count ?? 0) > 0
+                          ? Color.alphaBlend(Colors.white24, color)
+                          : (count ?? 0) <= 0 ? color.withOpacity(0.5) : color,
+                      fontWeight: isDark ? FontWeight.w600 : FontWeight.w700,
                       fontSize: fontSize,
                       fontFamily: 'Gellix',
                     ),
@@ -417,7 +437,9 @@ class TaskCategoryChip extends StatelessWidget {
                             ? Text(
                                 text ?? '',
                                 style: TextStyle(
-                                  color: (color ?? Colors.black)
+                                  color: (isDark
+                                          ? Colors.white
+                                          : color ?? Colors.black)
                                       .withOpacity(count <= 0 ? 0.6 : 0.8),
                                 ),
                               )
@@ -430,7 +452,8 @@ class TaskCategoryChip extends StatelessWidget {
                         Text(
                           '${count ?? 0}',
                           style: TextStyle(
-                            fontWeight: FontWeight.w900,
+                            fontWeight:
+                                isDark ? FontWeight.w700 : FontWeight.w900,
                             fontSize: fontSize + 2,
                           ),
                         ),

@@ -10,6 +10,7 @@ class AppTheme {
   static final themeData = ThemeData(
     fontFamily: 'Gellix',
     scaffoldBackgroundColor: Colors.white,
+    backgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
       elevation: 0.0,
       color: Colors.white70,
@@ -75,5 +76,45 @@ class AppTheme {
     primarySwatch: Colors.grey,
     primaryColor: Colors.greenAccent[400],
     disabledColor: Colors.blueGrey[900].withGreen(100),
+  );
+
+  static final dark1 = Color(0xff131517);
+  static final dark2 = Color(0xff222529);
+
+  static final darkThemeData = ThemeData.from(
+    colorScheme: ColorScheme(
+      primary: themeData.primaryColor,
+      primaryVariant: Color(0xff00d46d),
+      onPrimary: Colors.white,
+      secondary: Colors.white,
+      secondaryVariant: Colors.grey[100],
+      onSecondary: Colors.black,
+      background: dark1,
+      onBackground: Colors.white.withOpacity(0.9),
+      surface: dark2,
+      onSurface: Colors.white,
+      error: Colors.redAccent[400],
+      onError: Colors.white,
+      brightness: Brightness.dark,
+    ),
+  ).copyWith(
+    textTheme: themeData.textTheme.copyWith(),
+    cardTheme: themeData.cardTheme.copyWith(
+      color: dark2,
+      elevation: 0.0,
+    ),
+    primaryColor: mainColor,
+    dividerTheme: themeData.dividerTheme.copyWith(
+      color: Colors.white.withOpacity(0.03),
+    ),
+    splashFactory: InkRipple.splashFactory,
+    appBarTheme: themeData.appBarTheme.copyWith(
+      color: dark1.withOpacity(0.7),
+      textTheme: themeData.appBarTheme.textTheme.copyWith(
+        headline6: themeData.appBarTheme.textTheme.headline6.copyWith(
+          color: Colors.white,
+        ),
+      ),
+    ),
   );
 }

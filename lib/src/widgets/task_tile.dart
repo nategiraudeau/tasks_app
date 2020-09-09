@@ -40,7 +40,11 @@ class _TaskTileState extends State<TaskTile> with TickerProviderStateMixin {
       ),
     );
 
-    _entryAnim.forward();
+    try {
+      _entryAnim.forward();
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _collapseWhenNotVisible() async {
@@ -155,6 +159,9 @@ class _TaskTileState extends State<TaskTile> with TickerProviderStateMixin {
 
     if (notifier.selectedId == widget.task.id) selected = true;
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = notifier?.isDark ?? false;
+
     return Stack(
       children: [
         AnimatedOpacity(
@@ -178,356 +185,391 @@ class _TaskTileState extends State<TaskTile> with TickerProviderStateMixin {
                       animationDuration: _expanded
                           ? Duration(milliseconds: 300)
                           : Duration.zero,
-                      color: _expanded ? Colors.white : Colors.transparent,
-                      elevation: !selected && _expanded ? 12 : 0,
-                      shadowColor: _expanded
-                          ? Colors.black26.withBlue(20)
-                          : Colors.transparent,
+                      color: isDark
+                          ? Colors.transparent
+                          : _expanded ? Colors.white : Colors.transparent,
+                      elevation: isDark ? 0 : !selected && _expanded ? 12 : 0,
+                      shadowColor: isDark
+                          ? Colors.transparent
+                          : _expanded
+                              ? Colors.black26.withBlue(20)
+                              : Colors.transparent,
                       borderRadius: _expanded || selected
                           ? BorderRadius.circular(28)
                           : BorderRadius.zero,
                       clipBehavior: Clip.antiAlias,
-                      child: Material(
-                        borderRadius: _expanded
-                            ? BorderRadius.circular(28)
-                            : BorderRadius.zero,
-                        color: selected
-                            ? color.withOpacity(0.07)
-                            : Colors.transparent,
-                        clipBehavior: Clip.antiAlias,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            AnimatedContainer(
-                              duration: Duration(milliseconds: 800),
-                              curve: Interval(
-                                0.5,
-                                1,
-                                curve: Curves.easeInOutCirc,
-                              ),
-                              height: widget.visible && !_deleted ? 56 : 0,
-                              child: ListView(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                children: [
-                                  SizedBox(
-                                    height: 56,
-                                    child: Theme(
-                                      data: Theme.of(context).copyWith(
-                                        splashColor: selected
-                                            ? color.withOpacity(0.2)
-                                            : null,
-                                        highlightColor: selected
-                                            ? color.withOpacity(0.2)
-                                            : null,
-                                      ),
-                                      child: ListTile(
-                                        onLongPress: () {
-                                          final notifier = TaskNotifier.of(
-                                              context,
-                                              listen: false);
-
-                                          if (selected) {
-                                            notifier.unselect();
-                                          } else {
-                                            notifier.selectTask(widget.task.id);
-                                          }
-
-                                          setState(() {});
-                                        },
-                                        onTap: widget.visible && !_deleted
-                                            ? () {
-                                                setState(() {
-                                                  _expanded = !_expanded;
-                                                });
-                                              }
-                                            : () {},
-                                        contentPadding: EdgeInsets.only(
-                                          right: 32,
-                                          left: 12,
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 50),
+                        color: isDark
+                            ? _expanded
+                                ? Theme.of(context).cardColor
+                                : Colors.transparent
+                            : null,
+                        child: Material(
+                          borderRadius: _expanded
+                              ? BorderRadius.circular(28)
+                              : BorderRadius.zero,
+                          color: selected
+                              ? isDark
+                                  ? color.withOpacity(0.11)
+                                  : color.withOpacity(0.07)
+                              : Colors.transparent,
+                          clipBehavior: Clip.antiAlias,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              AnimatedContainer(
+                                duration: Duration(milliseconds: 800),
+                                curve: Interval(
+                                  0.5,
+                                  1,
+                                  curve: Curves.easeInOutCirc,
+                                ),
+                                height: widget.visible && !_deleted ? 56 : 0,
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  children: [
+                                    SizedBox(
+                                      height: 56,
+                                      child: Theme(
+                                        data: Theme.of(context).copyWith(
+                                          splashColor: selected
+                                              ? color.withOpacity(0.2)
+                                              : null,
+                                          highlightColor: selected
+                                              ? color.withOpacity(0.2)
+                                              : null,
                                         ),
-                                        title: Row(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                right: 12,
-                                              ),
-                                              child: InkWell(
-                                                onTap: () {
-                                                  if (widget.task.category ==
-                                                      TaskCategory.complete)
-                                                    _makeIncomplete();
-                                                  else
-                                                    _makeComplete();
-                                                },
-                                                borderRadius:
-                                                    BorderRadius.circular(24),
-                                                child: AnimatedSwitcher(
-                                                  duration: Duration(
-                                                      milliseconds: 300),
-                                                  child: Padding(
-                                                    key: ValueKey(
-                                                        widget.task.category),
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            12.0),
-                                                    child: Icon(
-                                                      icon,
-                                                      size: 20,
-                                                      color: widget.task
-                                                                  .category ==
-                                                              TaskCategory
-                                                                  .incomplete
-                                                          ? selected
-                                                              ? color
-                                                              : Colors.black
-                                                                  .withOpacity(
-                                                                      0.5)
-                                                          : color,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: selected
-                                                  ? CupertinoTextField(
-                                                      padding: EdgeInsets.zero,
-                                                      decoration: null,
-                                                      autofocus: true,
-                                                      cursorColor: color,
-                                                      controller: _taskName,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .subtitle1,
-                                                      onChanged: (value) {
-                                                        if (value != null &&
-                                                            value.isNotEmpty) {
-                                                          final notifier =
-                                                              TaskNotifier.of(
-                                                                  context,
-                                                                  listen:
-                                                                      false);
+                                        child: ListTile(
+                                          onLongPress: () {
+                                            final notifier = TaskNotifier.of(
+                                                context,
+                                                listen: false);
 
-                                                          notifier.renameTask(
-                                                            value,
-                                                            taskId:
-                                                                widget.task.id,
-                                                          );
-                                                        }
-                                                      },
-                                                    )
-                                                  : Text(
-                                                      widget.task.name ?? '',
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      textAlign: TextAlign.left,
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                        trailing: selected
-                                            ? _SelectedActions(
-                                                delete: () async {
+                                            if (selected) {
+                                              notifier.unselect();
+                                            } else {
+                                              notifier
+                                                  .selectTask(widget.task.id);
+                                            }
+
+                                            setState(() {});
+                                          },
+                                          onTap: widget.visible && !_deleted
+                                              ? () {
                                                   setState(() {
-                                                    _deleted = true;
+                                                    _expanded = !_expanded;
                                                   });
-                                                  await Future.delayed(
-                                                    Duration(milliseconds: 780),
-                                                  );
-
-                                                  final notifier =
-                                                      TaskNotifier.of(context,
-                                                          listen: false);
-
-                                                  if (selected)
-                                                    notifier.deleteSelected();
-                                                },
-                                              )
-                                            : Builder(
-                                                builder: (context) {
-                                                  final anim = _expanded
-                                                      ? CurvedAnimation(
-                                                          parent: _iconAnim,
-                                                          curve: Curves
-                                                              .easeOutCirc,
-                                                        )
-                                                      : CurvedAnimation(
-                                                          parent: _iconAnim,
-                                                          curve:
-                                                              Curves.easeInCirc,
-                                                        );
-
-                                                  return AnimatedBuilder(
-                                                    animation: anim,
-                                                    builder: (context, child) =>
-                                                        Transform.rotate(
-                                                      angle: anim.value * 3.15,
-                                                      child: child,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.expand_more,
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            AnimatedOpacity(
-                              duration: Duration(milliseconds: 200),
-                              opacity: _expanded ? 1 : 0,
-                              child: Divider(
-                                height: 0,
-                              ),
-                            ),
-                            AnimatedOpacity(
-                              duration: Duration(
-                                milliseconds: 200,
-                              ),
-                              curve: Curves.ease,
-                              opacity: _expanded ? 1 : 0,
-                              child: AnimatedContainer(
-                                duration:
-                                    !widget.visible && !_deleted && _expanded
-                                        ? Duration(milliseconds: 1200)
-                                        : Duration(milliseconds: 600),
-                                curve: !widget.visible && !_deleted && _expanded
-                                    ? Interval(
-                                        0.5,
-                                        1.0,
-                                        curve: Curves.fastLinearToSlowEaseIn,
-                                      )
-                                    : Curves.fastLinearToSlowEaseIn,
-                                height: _expanded && widget.visible && !_deleted
-                                    ? 140
-                                    : 0,
-                                child: DefaultTextStyle(
-                                  style: Theme.of(context).textTheme.subtitle2,
-                                  child: ListView(
-                                    physics: NeverScrollableScrollPhysics(),
-                                    children: [
-                                      SizedBox(
-                                        height: 140,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: Stack(
+                                                }
+                                              : () {},
+                                          contentPadding: EdgeInsets.only(
+                                            right: 32,
+                                            left: 12,
+                                          ),
+                                          title: Row(
                                             children: [
-                                              AnimatedAlign(
-                                                duration:
-                                                    Duration(milliseconds: 700),
-                                                curve: ElasticOutCurve(0.9),
-                                                alignment: alignment,
-                                                child: AnimatedSwitcher(
-                                                  duration: Duration(
-                                                      milliseconds: 200),
-                                                  child: SizedBox(
-                                                    key: ValueKey(
-                                                        widget.task.category),
-                                                    width: 93,
-                                                    height: 116,
-                                                    child: Material(
-                                                      color: color
-                                                          .withOpacity(0.12),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16),
+                                              Padding(
+                                                padding: EdgeInsets.only(
+                                                  right: 12,
+                                                ),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    if (widget.task.category ==
+                                                        TaskCategory.complete)
+                                                      _makeIncomplete();
+                                                    else
+                                                      _makeComplete();
+                                                  },
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                  child: AnimatedSwitcher(
+                                                    duration: Duration(
+                                                        milliseconds: 300),
+                                                    child: Padding(
+                                                      key: ValueKey(
+                                                          widget.task.category),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              12.0),
+                                                      child: Icon(
+                                                        icon,
+                                                        size: 20,
+                                                        color: widget.task
+                                                                    .category ==
+                                                                TaskCategory
+                                                                    .incomplete
+                                                            ? selected
+                                                                ? color
+                                                                : colorScheme
+                                                                    .onBackground
+                                                                    .withOpacity(
+                                                                        0.5)
+                                                            : color,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                              AnimatedSwitcher(
-                                                duration:
-                                                    Duration(milliseconds: 400),
-                                                child: Row(
-                                                  key: ValueKey(
-                                                      widget.task.category),
-                                                  children: <Widget>[
-                                                    _TaskCategoryWidget(
-                                                      TaskCategory.incomplete,
-                                                      selected: widget
-                                                              .task.category ==
-                                                          TaskCategory
-                                                              .incomplete,
-                                                      onPressed: () {
-                                                        _makeIncomplete();
-                                                      },
-                                                    ),
-                                                    Expanded(
-                                                      flex: 2,
-                                                      child: Center(
-                                                        child: Opacity(
-                                                          opacity: 0.5,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                              horizontal: 8,
+                                              Expanded(
+                                                child: selected
+                                                    ? CupertinoTextField(
+                                                        padding:
+                                                            EdgeInsets.zero,
+                                                        decoration: null,
+                                                        autofocus: true,
+                                                        cursorColor: color,
+                                                        controller: _taskName,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .subtitle1
+                                                            .copyWith(
+                                                              color: colorScheme
+                                                                  .onBackground,
                                                             ),
-                                                            child: Icon(
-                                                              LineIcons
-                                                                  .arrow_right,
-                                                              size: 20,
-                                                            ),
-                                                          ),
+                                                        onChanged: (value) {
+                                                          if (value != null &&
+                                                              value
+                                                                  .isNotEmpty) {
+                                                            final notifier =
+                                                                TaskNotifier.of(
+                                                                    context,
+                                                                    listen:
+                                                                        false);
+
+                                                            notifier.renameTask(
+                                                              value,
+                                                              taskId: widget
+                                                                  .task.id,
+                                                            );
+                                                          }
+                                                        },
+                                                      )
+                                                    : Text(
+                                                        widget.task.name ?? '',
+                                                        style: TextStyle(
+                                                          color: colorScheme
+                                                              .onBackground,
                                                         ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        textAlign:
+                                                            TextAlign.left,
                                                       ),
-                                                    ),
-                                                    _TaskCategoryWidget(
-                                                      TaskCategory.inProgress,
-                                                      selected: widget
-                                                              .task.category ==
-                                                          TaskCategory
-                                                              .inProgress,
-                                                      onPressed: () {
-                                                        _makeInProgress();
-                                                      },
-                                                    ),
-                                                    Expanded(
-                                                      flex: 2,
-                                                      child: Center(
-                                                        child: Opacity(
-                                                          opacity: 0.5,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                              horizontal: 8,
-                                                            ),
-                                                            child: Icon(
-                                                              LineIcons
-                                                                  .arrow_right,
-                                                              size: 20,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    _TaskCategoryWidget(
-                                                      TaskCategory.complete,
-                                                      selected: widget
-                                                              .task.category ==
-                                                          TaskCategory.complete,
-                                                      onPressed: () {
-                                                        _makeComplete();
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
                                               ),
                                             ],
                                           ),
+                                          trailing: selected
+                                              ? _SelectedActions(
+                                                  delete: () async {
+                                                    setState(() {
+                                                      _deleted = true;
+                                                    });
+                                                    await Future.delayed(
+                                                      Duration(
+                                                          milliseconds: 780),
+                                                    );
+
+                                                    final notifier =
+                                                        TaskNotifier.of(context,
+                                                            listen: false);
+
+                                                    if (selected)
+                                                      notifier.deleteSelected();
+                                                  },
+                                                )
+                                              : Builder(
+                                                  builder: (context) {
+                                                    final anim = _expanded
+                                                        ? CurvedAnimation(
+                                                            parent: _iconAnim,
+                                                            curve: Curves
+                                                                .easeOutCirc,
+                                                          )
+                                                        : CurvedAnimation(
+                                                            parent: _iconAnim,
+                                                            curve: Curves
+                                                                .easeInCirc,
+                                                          );
+
+                                                    return AnimatedBuilder(
+                                                      animation: anim,
+                                                      builder:
+                                                          (context, child) =>
+                                                              Transform.rotate(
+                                                        angle:
+                                                            anim.value * 3.15,
+                                                        child: child,
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.expand_more,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              AnimatedOpacity(
+                                duration: Duration(milliseconds: 200),
+                                opacity: _expanded ? 1 : 0,
+                                child: Divider(
+                                  height: 0,
+                                ),
+                              ),
+                              AnimatedOpacity(
+                                duration: Duration(
+                                  milliseconds: 200,
+                                ),
+                                curve: Curves.ease,
+                                opacity: _expanded ? 1 : 0,
+                                child: AnimatedContainer(
+                                  duration:
+                                      !widget.visible && !_deleted && _expanded
+                                          ? Duration(milliseconds: 1200)
+                                          : Duration(milliseconds: 600),
+                                  curve: !widget.visible &&
+                                          !_deleted &&
+                                          _expanded
+                                      ? Interval(
+                                          0.5,
+                                          1.0,
+                                          curve: Curves.fastLinearToSlowEaseIn,
+                                        )
+                                      : Curves.fastLinearToSlowEaseIn,
+                                  height:
+                                      _expanded && widget.visible && !_deleted
+                                          ? 140
+                                          : 0,
+                                  child: DefaultTextStyle(
+                                    style:
+                                        Theme.of(context).textTheme.subtitle2,
+                                    child: ListView(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      children: [
+                                        SizedBox(
+                                          height: 140,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: Stack(
+                                              children: [
+                                                AnimatedAlign(
+                                                  duration: Duration(
+                                                      milliseconds: 700),
+                                                  curve: ElasticOutCurve(0.9),
+                                                  alignment: alignment,
+                                                  child: AnimatedSwitcher(
+                                                    duration: Duration(
+                                                        milliseconds: 200),
+                                                    child: SizedBox(
+                                                      key: ValueKey(
+                                                          widget.task.category),
+                                                      width: 93,
+                                                      height: 116,
+                                                      child: Material(
+                                                        color: color
+                                                            .withOpacity(0.12),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(16),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                AnimatedSwitcher(
+                                                  duration: Duration(
+                                                      milliseconds: 400),
+                                                  child: Row(
+                                                    key: ValueKey(
+                                                        widget.task.category),
+                                                    children: <Widget>[
+                                                      _TaskCategoryWidget(
+                                                        TaskCategory.incomplete,
+                                                        selected: widget.task
+                                                                .category ==
+                                                            TaskCategory
+                                                                .incomplete,
+                                                        onPressed: () {
+                                                          _makeIncomplete();
+                                                        },
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Center(
+                                                          child: Opacity(
+                                                            opacity: 0.5,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                horizontal: 8,
+                                                              ),
+                                                              child: Icon(
+                                                                LineIcons
+                                                                    .arrow_right,
+                                                                size: 20,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      _TaskCategoryWidget(
+                                                        TaskCategory.inProgress,
+                                                        selected: widget.task
+                                                                .category ==
+                                                            TaskCategory
+                                                                .inProgress,
+                                                        onPressed: () {
+                                                          _makeInProgress();
+                                                        },
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Center(
+                                                          child: Opacity(
+                                                            opacity: 0.5,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                horizontal: 8,
+                                                              ),
+                                                              child: Icon(
+                                                                LineIcons
+                                                                    .arrow_right,
+                                                                size: 20,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      _TaskCategoryWidget(
+                                                        TaskCategory.complete,
+                                                        selected: widget.task
+                                                                .category ==
+                                                            TaskCategory
+                                                                .complete,
+                                                        onPressed: () {
+                                                          _makeComplete();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -632,7 +674,7 @@ class __SelectedActionsState extends State<_SelectedActions>
           ),
           child: IconButton(
             icon: Icon(FeatherIcons.trash2),
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.onBackground,
             iconSize: 20,
             onPressed: widget.delete ?? () {},
           ),
@@ -647,7 +689,7 @@ class __SelectedActionsState extends State<_SelectedActions>
           ),
           child: IconButton(
             icon: Icon(FeatherIcons.x),
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.onBackground,
             iconSize: 20,
             onPressed: () {
               final notifier = TaskNotifier.of(context, listen: false);
@@ -724,6 +766,10 @@ class __TaskCategoryWidgetState extends State<_TaskCategoryWidget>
     else
       _iconAnim.animateTo(0.8);
 
+    final notifier = TaskNotifier.of(context);
+
+    final isDark = notifier?.isDark ?? false;
+
     return SizedBox(
       width: 93,
       child: Material(
@@ -747,7 +793,11 @@ class __TaskCategoryWidgetState extends State<_TaskCategoryWidget>
                       ),
                       child: Icon(
                         icon,
-                        color: widget.selected ? color : Colors.black45,
+                        color: widget.selected
+                            ? color
+                            : isDark
+                                ? Colors.white.withOpacity(0.6)
+                                : Colors.black45,
                         size: 28,
                       ),
                     ),
@@ -758,7 +808,11 @@ class __TaskCategoryWidgetState extends State<_TaskCategoryWidget>
                       child: Text(
                         text,
                         style: Theme.of(context).textTheme.bodyText1.copyWith(
-                              color: widget.selected ? color : Colors.black45,
+                              color: widget.selected
+                                  ? isDark ? Colors.white : color
+                                  : isDark
+                                      ? Colors.white.withOpacity(0.75)
+                                      : Colors.black45,
                             ),
                       ),
                     ),
@@ -772,10 +826,16 @@ class __TaskCategoryWidgetState extends State<_TaskCategoryWidget>
                 child: InkWell(
                   onTap: widget.onPressed,
                   splashColor: !widget.selected
-                      ? Colors.black.withOpacity(0.02)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .onBackground
+                          .withOpacity(0.02)
                       : color.withOpacity(0.13),
                   highlightColor: !widget.selected
-                      ? Colors.black.withOpacity(0.02)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .onBackground
+                          .withOpacity(0.02)
                       : color.withOpacity(0.1),
                 ),
               ),

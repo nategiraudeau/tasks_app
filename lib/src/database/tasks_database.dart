@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'package:tasks_app/src/database/task.dart';
+import 'package:tasks_app/src/tasks.dart';
 
 /// The Identifier for the tasks table.
 final _tasksTableId = 'tasks';
@@ -139,7 +140,20 @@ class TasksDatabase {
       print('tasks are incorrect');
     }
 
-    return tasks;
+    final completed =
+        tasks.where((task) => task.category == TaskCategory.complete).toList();
+    final incomplete = tasks
+        .where((task) => task.category == TaskCategory.incomplete)
+        .toList();
+    final inProgress = tasks
+        .where((task) => task.category == TaskCategory.inProgress)
+        .toList();
+
+    final tasksToTake = trimTasks(completed, 15) +
+        trimTasks(incomplete, 20) +
+        trimTasks(inProgress, 20);
+
+    return tasksToTake;
   }
 
   /// Clean all of the data out of the database
@@ -152,4 +166,10 @@ class TasksDatabase {
       print(e);
     }
   }
+}
+
+List<Task> trimTasks(List<Task> tasks, [int count = 15]) {
+  if (count == null || tasks == null || tasks.length <= count) return tasks;
+
+  return tasks.reversed.take(count).toList().reversed.toList();
 }

@@ -58,7 +58,7 @@ final links = [
   _MenuLink('Incomplete', TaskCategory.incomplete),
 ];
 
-class TasksAppDrawer extends StatelessWidget {
+class TasksAppDrawer extends StatefulWidget {
   const TasksAppDrawer({
     Key key,
     @required this.close,
@@ -67,128 +67,189 @@ class TasksAppDrawer extends StatelessWidget {
   final void Function() close;
 
   @override
+  _TasksAppDrawerState createState() => _TasksAppDrawerState();
+}
+
+class _TasksAppDrawerState extends State<TasksAppDrawer>
+    with SingleTickerProviderStateMixin {
+  AnimationController _bgAnim;
+
+  @override
+  void initState() {
+    final notifier = TaskNotifier.of(context, listen: false);
+
+    _bgAnim = AnimationController(
+      vsync: this,
+      duration: Duration(
+        milliseconds: 500,
+      ),
+      value: (notifier?.isDark ?? false) ? 1 : 0,
+    );
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final notifier = TaskNotifier.of(context);
 
-    return Row(
+    if (notifier?.isDark ?? false) {
+      _bgAnim.forward();
+    } else {
+      _bgAnim.reverse();
+    }
+
+    return Stack(
       children: [
-        Expanded(
+        Scaffold(
+          backgroundColor: Colors.white,
+        ),
+        SlideTransition(
+          position: CurvedAnimation(
+            parent: _bgAnim,
+            curve: Curves.easeInOutQuint,
+            reverseCurve: Interval(
+              0.0,
+              0.5,
+              curve: Curves.easeInOutQuint,
+            ),
+          ).drive(
+            Tween(
+              begin: Offset(0, 1),
+              end: Offset.zero,
+            ),
+          ),
           child: Scaffold(
-            body: SafeArea(
-              child: ListView(
-                children: [
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
+            backgroundColor: AppTheme.darkThemeData.scaffoldBackgroundColor,
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: SafeArea(
+                  child: ListView(
                     children: [
                       SizedBox(
-                        width: 32,
+                        height: 20,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 32,
+                          ),
+                          SizedBox(
+                            width: 32,
+                            child: Image.asset('assets/icon-green.png'),
+                          ),
+                          SizedBox(
+                            width: 16,
+                          ),
+                          Text(
+                            'Tasks App',
+                            style: Theme.of(context)
+                                .appBarTheme
+                                .textTheme
+                                .headline6,
+                          ),
+                          Spacer(),
+                          IconButton(
+                            iconSize: 24,
+                            icon: Icon(
+                              FeatherIcons.arrowRight,
+                            ),
+                            onPressed: widget.close ??
+                                () {
+                                  Navigator.pop(context);
+                                },
+                          ),
+                          SizedBox(
+                            width: 32,
+                          ),
+                        ],
                       ),
                       SizedBox(
-                        width: 32,
-                        child: Image.asset('assets/icon-green.png'),
+                        height: 8,
+                      ),
+                      Divider(
+                        height: 18,
+                        indent: 28,
+                        endIndent: 36,
+                      ),
+                      Builder(
+                        builder: (context) {
+                          var items = <Widget>[];
+
+                          for (var i = 0; i < links.length; i++) {
+                            final link = links[i];
+
+                            final tasks = TaskNotifier.of(context)
+                                ?.fromCategory(link.category);
+
+                            final color =
+                                link.category == TaskCategory.incomplete
+                                    ? AppTheme.incomplete
+                                    : link.category == TaskCategory.inProgress
+                                        ? AppTheme.inProgress
+                                        : AppTheme.mainColor;
+
+                            items.add(
+                              _MenuItem(
+                                link.title,
+                                index: i,
+                                count: tasks?.length ?? 0,
+                                color: color,
+                                onPressed: () async {
+                                  print(link.category);
+
+                                  final tasks =
+                                      TaskNotifier.of(context, listen: false)
+                                          ?.fromCategory(link.category);
+
+                                  if (!(tasks == null || tasks.length <= 0)) {
+                                    widget.close();
+                                    await Future.delayed(
+                                        Duration(milliseconds: 220));
+                                    showTaskCategory(context, link.category);
+                                  }
+                                },
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: items,
+                          );
+                        },
                       ),
                       SizedBox(
-                        width: 16,
+                        height: 8,
                       ),
-                      Text(
-                        'Tasks App',
-                        style:
-                            Theme.of(context).appBarTheme.textTheme.headline6,
+                      Divider(
+                        height: 18,
+                        indent: 28,
+                        endIndent: 36,
                       ),
-                      Spacer(),
-                      IconButton(
-                        iconSize: 24,
-                        icon: Icon(
-                          FeatherIcons.arrowRight,
+                      _MenuItem(
+                        'Dark Mode',
+                        index: links.length + 1,
+                        trailing: Switch(
+                          value: notifier?.isDark,
+                          activeColor: Theme.of(context).primaryColor,
+                          onChanged: (value) {
+                            notifier?.toggleIsDark(value);
+                          },
                         ),
-                        onPressed: close ??
-                            () {
-                              Navigator.pop(context);
-                            },
-                      ),
-                      SizedBox(
-                        width: 32,
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Divider(
-                    height: 18,
-                    indent: 28,
-                    endIndent: 36,
-                  ),
-                  Builder(
-                    builder: (context) {
-                      var items = <Widget>[];
-
-                      for (var i = 0; i < links.length; i++) {
-                        final link = links[i];
-
-                        final tasks = TaskNotifier.of(context)
-                            ?.fromCategory(link.category);
-
-                        final color = link.category == TaskCategory.incomplete
-                            ? AppTheme.incomplete
-                            : link.category == TaskCategory.inProgress
-                                ? AppTheme.inProgress
-                                : AppTheme.mainColor;
-
-                        items.add(
-                          _MenuItem(
-                            link.title,
-                            index: i,
-                            count: tasks?.length ?? 0,
-                            color: color,
-                            onPressed: () async {
-                              print(link.category);
-
-                              final tasks =
-                                  TaskNotifier.of(context, listen: false)
-                                      ?.fromCategory(link.category);
-
-                              if (!(tasks == null || tasks.length <= 0)) {
-                                close();
-                                await Future.delayed(
-                                    Duration(milliseconds: 220));
-                                showTaskCategory(context, link.category);
-                              }
-                            },
-                          ),
-                        );
-                      }
-
-                      return Column(
-                        children: items,
-                      );
-                    },
-                  ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Divider(
-                    height: 18,
-                    indent: 28,
-                    endIndent: 36,
-                  ),
-                  _MenuItem(
-                    'Dark Mode',
-                    index: links.length + 1,
-                    trailing: Switch(
-                      value: false,
-                      onChanged: (value) {},
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-        VerticalDivider(
-          width: 2,
+            VerticalDivider(
+              width: 2,
+            ),
+          ],
         ),
       ],
     );
@@ -257,6 +318,8 @@ class __MenuItemState extends State<_MenuItem>
       ),
     );
 
+    final textColor = Theme.of(context).colorScheme.onBackground;
+
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 32),
       onTap:
@@ -269,8 +332,8 @@ class __MenuItemState extends State<_MenuItem>
               widget.title ?? '',
               style: TextStyle(
                 color: widget.count != null && widget.count <= 0
-                    ? Colors.black38
-                    : Colors.black,
+                    ? textColor.withOpacity(0.38)
+                    : textColor,
               ),
             ),
             SizedBox(

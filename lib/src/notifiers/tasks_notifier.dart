@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tasks_app/src/database/task.dart';
 import 'package:tasks_app/src/database/tasks_database.dart';
 import 'package:tasks_app/src/tasks.dart';
@@ -9,6 +13,34 @@ import 'package:tasks_app/src/tasks.dart';
 class TaskNotifier with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _previousTasks = [];
+
+  final _prefs = SharedPreferences.getInstance();
+
+  bool _isDark = false;
+
+  bool get isDark => _isDark;
+
+  Future<void> toggleIsDark([bool isDark]) async {
+    _isDark = isDark ?? !_isDark;
+    notifyListeners();
+
+    _prefs.then((prefs) => prefs.setBool('isDark', _isDark));
+
+    await Future.delayed(Duration(milliseconds: _isDark ? 400 : 300));
+
+    try {
+      FlutterStatusbarcolor.setStatusBarColor(Colors.transparent,
+          animate: true);
+
+      if (_isDark) {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+      } else {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Timer _dbTimer;
 
@@ -58,9 +90,31 @@ class TaskNotifier with ChangeNotifier {
     final duration = const Duration(milliseconds: 1500);
     _dbTimer = Timer.periodic(duration, (_) => _syncWithDatabase());
 
+    final prefs = await _prefs;
+
+    final _isDarkFromPrefs = prefs.getBool('isDark') ?? false;
+    _isDark = _isDarkFromPrefs;
+
+    notifyListeners();
+
+    await Future.delayed(Duration(milliseconds: 300));
+
     _ready = true;
 
     notifyListeners();
+
+    try {
+      FlutterStatusbarcolor.setStatusBarColor(Colors.transparent,
+          animate: true);
+
+      if (_isDark) {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+      } else {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _syncWithDatabase() async {
@@ -209,10 +263,16 @@ class TaskNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteSelected() {
+  Future<void> deleteSelected() async {
     if (_selected == null) return;
 
-    _tasks.removeWhere((task) => task.id == _selected);
+    final selected = _selected;
+
+    _selected = null;
+
+    notifyListeners();
+
+    _tasks.removeWhere((task) => task.id == selected);
 
     _updateData();
   }
@@ -249,6 +309,7 @@ class TaskNotifier with ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
+
     _updateData();
   }
 

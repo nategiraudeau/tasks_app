@@ -1,7 +1,6 @@
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pie_chart/pie_chart.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/task_category_list.dart';
 import 'package:tasks_app/src/tasks.dart';
@@ -71,6 +70,8 @@ class _OverviewState extends State<Overview>
 
     final taskNotifier = TaskNotifier.of(context);
 
+    final isDark = taskNotifier?.isDark ?? false;
+
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 20),
       children: <Widget>[
@@ -84,204 +85,230 @@ class _OverviewState extends State<Overview>
         SizedBox(
           height: 28,
         ),
-        SlideTransition(
-          position: _contentAnim.drive(slideUpTween),
-          child: Column(
-            children: <Widget>[
-              Card(
-                child: InkWell(
-                  onTap: widget.goToTasks,
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Row(
-                      children: <Widget>[
-                        SizedBox(width: 12),
-                        DefaultTextStyle(
-                          style: Theme.of(context).textTheme.headline5,
-                          child: Row(
-                            children: <Widget>[
-                              Text('Tasks'),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                '${(taskNotifier?.incomplete?.length ?? 0) + (taskNotifier?.inProgress?.length ?? 0)}',
-                                style: TextStyle(
-                                  color: AppTheme.mainColor.withOpacity(0.8),
+        FadeTransition(
+          opacity: CurvedAnimation(
+            curve: Curves.easeOutCirc,
+            parent: _contentAnim,
+          ),
+          child: SlideTransition(
+            position: _contentAnim.drive(slideUpTween),
+            child: Column(
+              children: <Widget>[
+                Card(
+                  child: InkWell(
+                    onTap: widget.goToTasks,
+                    child: Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Row(
+                        children: <Widget>[
+                          SizedBox(width: 12),
+                          DefaultTextStyle(
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline5
+                                .copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Column(
-                                children: <Widget>[
-                                  SizedBox(
-                                    height: 5,
+                            child: Row(
+                              children: <Widget>[
+                                Text(
+                                  'Tasks',
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  '${(taskNotifier?.incomplete?.length ?? 0) + (taskNotifier?.inProgress?.length ?? 0)}',
+                                  style: TextStyle(
+                                    color: AppTheme.mainColor.withOpacity(
+                                      isDark ? 1 : 0.8,
+                                    ),
                                   ),
-                                  Icon(
-                                    FeatherIcons.arrowRight,
-                                    size: 22,
-                                    color: Colors.black54,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Spacer(),
-                        Material(
-                          borderRadius: BorderRadius.circular(14),
-                          color: Colors.black.withOpacity(0.05),
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: () {
-                              createTask(
-                                context,
-                                goToTasks: widget.goToTasks,
-                              );
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.all(20),
-                              child: Icon(Icons.add),
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Column(
+                                  children: <Widget>[
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Icon(
+                                      FeatherIcons.arrowRight,
+                                      size: 22,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground
+                                          .withOpacity(0.54),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                          Spacer(),
+                          Material(
+                            borderRadius: BorderRadius.circular(14),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.05),
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              onTap: () {
+                                createTask(
+                                  context,
+                                  goToTasks: widget.goToTasks,
+                                );
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Icon(
+                                  Icons.add,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 32,
-              ),
-              //       SlideTransition(
-              //         position: _contentAnim2.drive(slideUpTween2),
-              //         child: Builder(
-              //           builder: (context) {
-              //             final total = taskNotifier?.tasks?.length ?? 0;
-
-              //             final complete = taskNotifier?.complete?.length ?? 0;
-              //             final inProgress = taskNotifier?.inProgress?.length ?? 0;
-              //             final incomplete = taskNotifier?.incomplete?.length ?? 0;
-
-              //             final completePercent =
-              //                 ((complete / total) * 100).toInt().toDouble();
-
-              //             final incompletePercent =
-              //                 ((incomplete / total) * 100).toInt().toDouble();
-
-              //             final inProgressPercent =
-              //                 ((inProgress / total) * 100).toInt().toDouble();
-
-              //             final percentageDisplay = '${completePercent.toInt()}%';
-
-              //             return Card(
-              //               child: Padding(
-              //                 padding: const EdgeInsets.all(24.0),
-              //                 child: Column(
-              //                   children: [
-              //                     DefaultTextStyle(
-              //                       style: Theme.of(context).textTheme.headline5,
-              //                       child: Row(
-              //                         mainAxisAlignment: MainAxisAlignment.center,
-              //                         children: [
-              //                           Text(
-              //                             'Progress',
-              //                           ),
-              //                           SizedBox(
-              //                             width: 8,
-              //                           ),
-              //                           Column(
-              //                             children: <Widget>[
-              //                               SizedBox(
-              //                                 height: 5,
-              //                               ),
-              //                               Icon(
-              //                                 FeatherIcons.trendingUp,
-              //                                 size: 22,
-              //                                 color: Colors.black54,
-              //                               ),
-              //                             ],
-              //                           ),
-              //                         ],
-              //                       ),
-              //                     ),
-              //                     SizedBox(
-              //                       height: 28,
-              //                     ),
-              //                     Stack(
-              //                       children: [
-              //                         PieChart(
-              //                           dataMap: {
-              //                             'complete': completePercent,
-              //                             'incomplete': incompletePercent,
-              //                             'in progress': inProgressPercent,
-              //                           },
-              //                           animationDuration:
-              //                               Duration(milliseconds: 600),
-              //                           legendOptions: LegendOptions(
-              //                             showLegends: false,
-              //                           ),
-              //                           chartValuesOptions: ChartValuesOptions(
-              //                             showChartValues: false,
-              //                           ),
-              //                           chartType: ChartType.ring,
-              //                           ringStrokeWidth: 12,
-              //                           initialAngleInDegree: 135,
-              //                           chartRadius:
-              //                               MediaQuery.of(context).size.width / 3 -
-              //                                   42,
-              //                           colorList: [
-              //                             AppTheme.mainColor.withOpacity(0.8),
-              //                             AppTheme.incomplete.withOpacity(0.8),
-              //                             AppTheme.inProgress.withOpacity(0.8),
-              //                           ],
-              //                         ),
-              //                         Positioned.fill(
-              //                           child: Center(
-              //                             child: Row(
-              //                               mainAxisSize: MainAxisSize.min,
-              //                               children: [
-              //                                 SizedBox(
-              //                                   width: 5,
-              //                                 ),
-              //                                 Text(
-              //                                   percentageDisplay,
-              //                                   style: Theme.of(context)
-              //                                       .textTheme
-              //                                       .subtitle1,
-              //                                 ),
-              //                               ],
-              //                             ),
-              //                           ),
-              //                         ),
-              //                       ],
-              //                     ),
-              //                     SizedBox(
-              //                       height: 8,
-              //                     ),
-              //                     buildPercentTile(title: 'Complete'),
-              //                     buildPercentTile(title: 'Complete'),
-              //                     buildPercentTile(title: 'Complete'),
-              //                   ],
-              //                 ),
-              //               ),
-              //             );
-              //           },
-              //         ),
-              //       ),
-              FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: _contentAnim2,
-                  curve: Curves.ease,
+                SizedBox(
+                  height: 32,
                 ),
-                child: CountOverview(
-                  contentAnim2: _contentAnim2,
-                  slideUpTween: slideUpTween2,
-                  taskNotifier: taskNotifier,
+                //       SlideTransition(
+                //         position: _contentAnim2.drive(slideUpTween2),
+                //         child: Builder(
+                //           builder: (context) {
+                //             final total = taskNotifier?.tasks?.length ?? 0;
+
+                //             final complete = taskNotifier?.complete?.length ?? 0;
+                //             final inProgress = taskNotifier?.inProgress?.length ?? 0;
+                //             final incomplete = taskNotifier?.incomplete?.length ?? 0;
+
+                //             final completePercent =
+                //                 ((complete / total) * 100).toInt().toDouble();
+
+                //             final incompletePercent =
+                //                 ((incomplete / total) * 100).toInt().toDouble();
+
+                //             final inProgressPercent =
+                //                 ((inProgress / total) * 100).toInt().toDouble();
+
+                //             final percentageDisplay = '${completePercent.toInt()}%';
+
+                //             return Card(
+                //               child: Padding(
+                //                 padding: const EdgeInsets.all(24.0),
+                //                 child: Column(
+                //                   children: [
+                //                     DefaultTextStyle(
+                //                       style: Theme.of(context).textTheme.headline5,
+                //                       child: Row(
+                //                         mainAxisAlignment: MainAxisAlignment.center,
+                //                         children: [
+                //                           Text(
+                //                             'Progress',
+                //                           ),
+                //                           SizedBox(
+                //                             width: 8,
+                //                           ),
+                //                           Column(
+                //                             children: <Widget>[
+                //                               SizedBox(
+                //                                 height: 5,
+                //                               ),
+                //                               Icon(
+                //                                 FeatherIcons.trendingUp,
+                //                                 size: 22,
+                //                                 color: Colors.black54,
+                //                               ),
+                //                             ],
+                //                           ),
+                //                         ],
+                //                       ),
+                //                     ),
+                //                     SizedBox(
+                //                       height: 28,
+                //                     ),
+                //                     Stack(
+                //                       children: [
+                //                         PieChart(
+                //                           dataMap: {
+                //                             'complete': completePercent,
+                //                             'incomplete': incompletePercent,
+                //                             'in progress': inProgressPercent,
+                //                           },
+                //                           animationDuration:
+                //                               Duration(milliseconds: 600),
+                //                           legendOptions: LegendOptions(
+                //                             showLegends: false,
+                //                           ),
+                //                           chartValuesOptions: ChartValuesOptions(
+                //                             showChartValues: false,
+                //                           ),
+                //                           chartType: ChartType.ring,
+                //                           ringStrokeWidth: 12,
+                //                           initialAngleInDegree: 135,
+                //                           chartRadius:
+                //                               MediaQuery.of(context).size.width / 3 -
+                //                                   42,
+                //                           colorList: [
+                //                             AppTheme.mainColor.withOpacity(0.8),
+                //                             AppTheme.incomplete.withOpacity(0.8),
+                //                             AppTheme.inProgress.withOpacity(0.8),
+                //                           ],
+                //                         ),
+                //                         Positioned.fill(
+                //                           child: Center(
+                //                             child: Row(
+                //                               mainAxisSize: MainAxisSize.min,
+                //                               children: [
+                //                                 SizedBox(
+                //                                   width: 5,
+                //                                 ),
+                //                                 Text(
+                //                                   percentageDisplay,
+                //                                   style: Theme.of(context)
+                //                                       .textTheme
+                //                                       .subtitle1,
+                //                                 ),
+                //                               ],
+                //                             ),
+                //                           ),
+                //                         ),
+                //                       ],
+                //                     ),
+                //                     SizedBox(
+                //                       height: 8,
+                //                     ),
+                //                     buildPercentTile(title: 'Complete'),
+                //                     buildPercentTile(title: 'Complete'),
+                //                     buildPercentTile(title: 'Complete'),
+                //                   ],
+                //                 ),
+                //               ),
+                //             );
+                //           },
+                //         ),
+                //       ),
+                FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: _contentAnim2,
+                    curve: Curves.ease,
+                  ),
+                  child: CountOverview(
+                    contentAnim2: _contentAnim2,
+                    slideUpTween: slideUpTween2,
+                    taskNotifier: taskNotifier,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -324,6 +351,10 @@ class CountOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifier = TaskNotifier.of(context);
+
+    final isDark = notifier?.isDark ?? false;
+
     return SlideTransition(
       position: _contentAnim2.drive(slideUpTween),
       child: SizedBox(
@@ -343,18 +374,28 @@ class CountOverview extends StatelessWidget {
                         ? null
                         : Border.all(
                             width: 3,
-                            color: Colors.black.withOpacity(0.06),
+                            color: notifier?.isDark ?? false
+                                ? AppTheme.dark2
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onBackground
+                                    .withOpacity(0.06),
                           ),
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: Card(
                     color: tappable
-                        ? AppTheme.mainColor.withOpacity(0.9)
-                        : Colors.white24,
-                    shadowColor: tappable
-                        ? AppTheme.mainColor.withOpacity(0.5)
-                        : Colors.transparent,
-                    elevation: tappable ? 40 : 0,
+                        ? isDark ? null : AppTheme.mainColor.withOpacity(0.9)
+                        : Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.24),
+                    shadowColor: isDark
+                        ? Colors.transparent
+                        : tappable
+                            ? AppTheme.mainColor.withOpacity(0.5)
+                            : Colors.transparent,
+                    elevation: tappable && !isDark ? 40 : 0,
                     child: InkWell(
                       highlightColor: Colors.white12,
                       splashColor: Colors.white24,
@@ -374,7 +415,9 @@ class CountOverview extends StatelessWidget {
                                   .headline2
                                   .copyWith(
                                     color: tappable
-                                        ? Colors.white
+                                        ? isDark
+                                            ? AppTheme.mainColor
+                                            : Colors.white
                                         : Theme.of(context)
                                             .primaryColor
                                             .withOpacity(0.6),
@@ -393,7 +436,10 @@ class CountOverview extends StatelessWidget {
                                     .copyWith(
                                       color: tappable
                                           ? Colors.white
-                                          : Colors.black.withOpacity(0.6),
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onBackground
+                                              .withOpacity(0.6),
                                     ),
                               ),
                             ),
@@ -442,13 +488,21 @@ class CountOverview extends StatelessWidget {
                               ? null
                               : Border.all(
                                   width: 3,
-                                  color: Colors.black.withOpacity(0.06),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground
+                                      .withOpacity(0.06),
                                 ),
                         ),
                         child: Material(
                           color: tappable
-                              ? AppTheme.inProgress.withOpacity(0.13)
-                              : Colors.white24,
+                              ? isDark
+                                  ? AppTheme.dark2
+                                  : AppTheme.inProgress.withOpacity(0.13)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withOpacity(0.24),
                           borderRadius: BorderRadius.circular(16),
                           clipBehavior: Clip.antiAlias,
                           child: InkWell(
@@ -485,8 +539,13 @@ class CountOverview extends StatelessWidget {
                                         .copyWith(
                                           fontWeight: FontWeight.w700,
                                           color: tappable
-                                              ? AppTheme.inProgress
-                                              : Colors.black.withOpacity(0.7),
+                                              ? isDark
+                                                  ? Colors.white
+                                                  : AppTheme.inProgress
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onBackground
+                                                  .withOpacity(0.7),
                                         ),
                                   ),
                                 ],
@@ -510,13 +569,21 @@ class CountOverview extends StatelessWidget {
                               ? null
                               : Border.all(
                                   width: 3,
-                                  color: Colors.black.withOpacity(0.06),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground
+                                      .withOpacity(0.06),
                                 ),
                         ),
                         child: Material(
                           color: tappable
-                              ? AppTheme.incomplete.withOpacity(0.13)
-                              : Colors.white24,
+                              ? isDark
+                                  ? AppTheme.dark2
+                                  : AppTheme.incomplete.withOpacity(0.13)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withOpacity(0.24),
                           borderRadius: BorderRadius.circular(16),
                           clipBehavior: Clip.antiAlias,
                           child: InkWell(
@@ -543,17 +610,24 @@ class CountOverview extends StatelessWidget {
                                               .withOpacity(tappable ? 1 : 0.6),
                                         ),
                                   ),
-                                  Text(
-                                    'Incomplete',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1
-                                        .copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: tappable
-                                              ? AppTheme.incomplete
-                                              : Colors.black.withOpacity(0.7),
-                                        ),
+                                  FittedBox(
+                                    child: Text(
+                                      'Incomplete',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1
+                                          .copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: tappable
+                                                ? isDark
+                                                    ? Colors.white
+                                                    : AppTheme.incomplete
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onBackground
+                                                    .withOpacity(0.7),
+                                          ),
+                                    ),
                                   ),
                                 ],
                               ),

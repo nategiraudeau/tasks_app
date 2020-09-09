@@ -5,6 +5,8 @@ import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
 import 'package:tasks_app/src/widgets/task_tile.dart';
 
+import 'database/task.dart';
+
 class _CategoryList extends StatefulWidget {
   final TaskCategory category;
 
@@ -17,6 +19,7 @@ class _CategoryList extends StatefulWidget {
 class _CategoryListState extends State<_CategoryList>
     with SingleTickerProviderStateMixin {
   AnimationController _entryAnim;
+  List<Task> _initialTasks = [];
 
   @override
   void initState() {
@@ -26,6 +29,10 @@ class _CategoryListState extends State<_CategoryList>
         milliseconds: 550,
       ),
     )..forward();
+
+    final notifier = TaskNotifier.of(context, listen: false);
+    _initialTasks = notifier?.fromCategory(widget.category) ?? [];
+
     super.initState();
   }
 
@@ -39,6 +46,10 @@ class _CategoryListState extends State<_CategoryList>
     await Future.delayed(Duration(milliseconds: 700));
 
     try {
+      final notifier = TaskNotifier.of(context, listen: false);
+
+      notifier?.unselect();
+
       Navigator.popUntil(context, ModalRoute.withName('/'));
     } catch (e) {
       print('error popping route: $e');
@@ -81,13 +92,22 @@ class _CategoryListState extends State<_CategoryList>
 
     return Scaffold(
       body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: Duration(milliseconds: 400),
-          child: Builder(
-            builder: (context) {
-              if (tasks == null) return Scaffold();
+        child: FutureBuilder(
+          future: Future.delayed(
+            Duration(
+              milliseconds: 500,
+            ),
+          ),
+          builder: (context, snapshot) {
+            if (tasks == null) return Scaffold();
 
-              return Column(
+            final isNotReady = false;
+            // (notifier?.fromCategory(widget.category)?.length ?? 0) > 8 &&
+            //     snapshot.connectionState != ConnectionState.done;
+
+            return AnimatedSwitcher(
+              duration: Duration(milliseconds: 100),
+              child: Column(
                 children: [
                   SizedBox(
                     height: 52,
@@ -114,6 +134,8 @@ class _CategoryListState extends State<_CategoryList>
                                   .headline6
                                   .copyWith(
                                     fontWeight: FontWeight.w700,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                               child: SlideTransition(
                                 position: _entryAnim.drive(tween),
@@ -141,50 +163,59 @@ class _CategoryListState extends State<_CategoryList>
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        final notifier =
-                            TaskNotifier.of(context, listen: false);
+                  Builder(
+                    key: ValueKey(isNotReady),
+                    builder: (context) {
+                      if (isNotReady) {
+                        return Container();
+                      }
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            final notifier =
+                                TaskNotifier.of(context, listen: false);
 
-                        notifier?.unselect();
-                      },
-                      child: ListView(
-                        padding: EdgeInsets.zero,
-                        children: [
-                          SizedBox(
-                            height: 20,
+                            notifier?.unselect();
+                          },
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Builder(builder: (context) {
+                                var tiles = <Widget>[];
+
+                                for (int i = 0; i < _initialTasks.length; i++) {
+                                  final task = _initialTasks[i];
+
+                                  tiles.add(
+                                    TaskTile(
+                                      task,
+                                      index: i,
+                                      key: ValueKey(task.id),
+                                      visible: task.category == widget.category,
+                                    ),
+                                  );
+                                }
+
+                                return Column(
+                                  children: tiles,
+                                );
+                              }),
+                              SizedBox(
+                                height: 100,
+                              ),
+                            ],
                           ),
-                          Builder(builder: (context) {
-                            var tiles = <Widget>[];
-
-                            for (int i = 0; i < tasks.length; i++) {
-                              final task = tasks[i];
-
-                              tiles.add(
-                                TaskTile(
-                                  task,
-                                  index: i,
-                                  visible: task.category == widget.category,
-                                ),
-                              );
-                            }
-
-                            return Column(
-                              children: tiles,
-                            );
-                          }),
-                          SizedBox(
-                            height: 100,
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
