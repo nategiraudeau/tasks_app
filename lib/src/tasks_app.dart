@@ -306,7 +306,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 padding:
                                                     const EdgeInsets.all(8.0),
                                                 child: IconButton(
-                                                  icon: Icon(FeatherIcons.menu),
+                                                  icon: Icon(
+                                                    FeatherIcons.menu,
+                                                  ),
                                                   color: Theme.of(context)
                                                       .colorScheme
                                                       .onBackground

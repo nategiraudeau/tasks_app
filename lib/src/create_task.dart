@@ -1,4 +1,4 @@
-import 'package:tasks_app/src/database/task.dart';
+import 'package:tasks_app/src/data/task.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
@@ -291,7 +291,7 @@ class _CreateTaskPageState extends State<CreateTaskPage>
                                     },
                                     child: Center(
                                       child: Text(
-                                        'Finish',
+                                        'Create',
                                         style: Theme.of(context)
                                             .textTheme
                                             .subtitle1

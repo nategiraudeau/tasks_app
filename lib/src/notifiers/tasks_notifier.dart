@@ -6,8 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tasks_app/src/database/task.dart';
-import 'package:tasks_app/src/database/tasks_database.dart';
+import 'package:tasks_app/src/data/task.dart';
+import 'package:tasks_app/src/data/tasks_database.dart';
 import 'package:tasks_app/src/tasks.dart';
 
 class TaskNotifier with ChangeNotifier {
@@ -171,6 +171,7 @@ class TaskNotifier with ChangeNotifier {
   }
 
   String _selected;
+  String _expanded;
 
   var _updating = false;
 
@@ -258,8 +259,18 @@ class TaskNotifier with ChangeNotifier {
     notifyListeners();
   }
 
+  void expandTask(String id) {
+    _expanded = id;
+    notifyListeners();
+  }
+
   void unselect() {
     _selected = null;
+    notifyListeners();
+  }
+
+  void collapse() {
+    _expanded = null;
     notifyListeners();
   }
 
@@ -295,9 +306,14 @@ class TaskNotifier with ChangeNotifier {
   List<Task> get tasks => _tasks;
 
   String get selectedId => _selected;
+  String get expandedId => _expanded;
 
   Task get selected {
     return _tasks.firstWhere((task) => task.id == _selected);
+  }
+
+  Task get expanded {
+    return _tasks.firstWhere((task) => task.id == _expanded);
   }
 
   List<Task> fromCategory(TaskCategory category) =>
@@ -328,6 +344,12 @@ class TaskNotifier with ChangeNotifier {
     if (context == null) return null;
 
     return Provider.of<TaskNotifier>(context, listen: listen);
+  }
+
+  Future<void> resetTasks() async {
+    _tasks = [];
+
+    _updateData();
   }
 
   @override

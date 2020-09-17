@@ -209,7 +209,7 @@ class _TasksAppDrawerState extends State<TasksAppDrawer>
                                   if (!(tasks == null || tasks.length <= 0)) {
                                     widget.close();
                                     await Future.delayed(
-                                        Duration(milliseconds: 220));
+                                        Duration(milliseconds: 80));
                                     showTaskCategory(context, link.category);
                                   }
                                 },
@@ -239,6 +239,27 @@ class _TasksAppDrawerState extends State<TasksAppDrawer>
                           onChanged: (value) {
                             notifier?.toggleIsDark(value);
                           },
+                        ),
+                      ),
+                      Divider(
+                        height: 18,
+                        indent: 28,
+                        endIndent: 36,
+                      ),
+                      _MenuItem(
+                        'Clear Tasks',
+                        onPressed: () {
+                          notifier?.resetTasks();
+                        },
+                        index: links.length + 2,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(FeatherIcons.trash2),
+                            SizedBox(
+                              width: 16,
+                            ),
+                          ],
                         ),
                       ),
                     ],

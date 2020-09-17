@@ -5,7 +5,7 @@ import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
 import 'package:tasks_app/src/widgets/task_tile.dart';
 
-import 'database/task.dart';
+import 'package:tasks_app/src/data/task.dart';
 
 class _CategoryList extends StatefulWidget {
   final TaskCategory category;

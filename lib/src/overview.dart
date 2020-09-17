@@ -55,7 +55,7 @@ class _OverviewState extends State<Overview>
     super.build(context);
 
     final slideUpTween = Tween<Offset>(
-      begin: Offset(0, 0.3),
+      begin: Offset(0, 0.5),
       end: Offset.zero,
     ).chain(CurveTween(
       curve: ElasticOutCurve(0.9),
@@ -427,20 +427,22 @@ class CountOverview extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                 horizontal: 20,
                               ),
-                              child: Text(
-                                'Completed',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(
-                                      color: tappable
-                                          ? Colors.white
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onBackground
-                                              .withOpacity(0.6),
-                                    ),
+                              child: FittedBox(
+                                child: Text(
+                                  'Completed',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(
+                                        color: tappable
+                                            ? Colors.white
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .onBackground
+                                                .withOpacity(0.6),
+                                      ),
+                                ),
                               ),
                             ),
                             SizedBox(
@@ -531,22 +533,29 @@ class CountOverview extends StatelessWidget {
                                                   .withOpacity(0.6),
                                         ),
                                   ),
-                                  Text(
-                                    'In Progress',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1
-                                        .copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: tappable
-                                              ? isDark
-                                                  ? Colors.white
-                                                  : AppTheme.inProgress
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .onBackground
-                                                  .withOpacity(0.7),
-                                        ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    child: FittedBox(
+                                      child: Text(
+                                        'In Progress',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            .copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: tappable
+                                                  ? isDark
+                                                      ? Colors.white
+                                                      : AppTheme.inProgress
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .onBackground
+                                                      .withOpacity(0.7),
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -610,23 +619,28 @@ class CountOverview extends StatelessWidget {
                                               .withOpacity(tappable ? 1 : 0.6),
                                         ),
                                   ),
-                                  FittedBox(
-                                    child: Text(
-                                      'Incomplete',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText1
-                                          .copyWith(
-                                            fontWeight: FontWeight.w700,
-                                            color: tappable
-                                                ? isDark
-                                                    ? Colors.white
-                                                    : AppTheme.incomplete
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .onBackground
-                                                    .withOpacity(0.7),
-                                          ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    child: FittedBox(
+                                      child: Text(
+                                        'Incomplete',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            .copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: tappable
+                                                  ? isDark
+                                                      ? Colors.white
+                                                      : AppTheme.incomplete
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .onBackground
+                                                      .withOpacity(0.7),
+                                            ),
+                                      ),
                                     ),
                                   ),
                                 ],

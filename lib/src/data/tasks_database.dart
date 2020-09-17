@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
-import 'package:tasks_app/src/database/task.dart';
+import 'package:tasks_app/src/data/task.dart';
 import 'package:tasks_app/src/tasks.dart';
 
 /// The Identifier for the tasks table.
@@ -151,7 +151,7 @@ class TasksDatabase {
 
     final tasksToTake = trimTasks(completed, 15) +
         trimTasks(incomplete, 20) +
-        trimTasks(inProgress, 20);
+        trimTasks(inProgress, 15);
 
     return tasksToTake;
   }

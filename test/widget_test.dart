@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tasks_app/src/database/task.dart';
+import 'package:tasks_app/src/data/task.dart';
 import 'package:tasks_app/src/tasks.dart';
 
 void main() {
