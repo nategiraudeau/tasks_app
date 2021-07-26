@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:tasks_app/src/android_ripple.dart';
+import 'package:tasks_app/src/ios_ripple.dart';
 
 class AppTheme {
   static final Color mainColor = Colors.greenAccent[400];
@@ -59,6 +63,9 @@ class AppTheme {
         fontSize: 15,
       ),
     ),
+    splashFactory: Platform.isAndroid
+        ? AndroidRipple.splashFactory
+        : IOSRipple.splashFactory,
     dividerTheme: DividerThemeData(
       color: Colors.black.withOpacity(0.05),
       thickness: 2,
@@ -72,7 +79,6 @@ class AppTheme {
       ),
       margin: EdgeInsets.zero,
     ),
-    splashFactory: InkRipple.splashFactory,
     primarySwatch: Colors.grey,
     primaryColor: Colors.greenAccent[400],
     disabledColor: Colors.blueGrey[900].withGreen(100),
@@ -107,7 +113,9 @@ class AppTheme {
     dividerTheme: themeData.dividerTheme.copyWith(
       color: Colors.white.withOpacity(0.03),
     ),
-    splashFactory: InkRipple.splashFactory,
+    splashFactory: Platform.isAndroid
+        ? AndroidRipple.splashFactory
+        : IOSRipple.splashFactory,
     appBarTheme: themeData.appBarTheme.copyWith(
       color: dark1.withOpacity(0.7),
       textTheme: themeData.appBarTheme.textTheme.copyWith(

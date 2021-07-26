@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:tasks_app/src/create_task.dart';
@@ -372,14 +375,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: <Widget>[
-                                          buildNavbarIcon(
-                                            context,
+                                          NavbarIcon(
                                             FeatherIcons.home,
                                             selected: _currentIndex == 0,
                                             onPressed: () => _changeTab(0),
                                           ),
-                                          buildNavbarIcon(
-                                            context,
+                                          NavbarIcon(
                                             FeatherIcons.edit3,
                                             selected: _currentIndex == 1,
                                             onPressed: () => _changeTab(1),
@@ -419,50 +420,73 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-Widget buildNavbarIcon(BuildContext context, IconData icon,
-    {void Function() onPressed, bool selected = false}) {
-  final notifier = TaskNotifier.of(context);
+class NavbarIcon extends StatefulWidget {
+  const NavbarIcon(
+    this.icon, {
+    Key key,
+    this.selected = false,
+    this.onPressed,
+  }) : super(key: key);
 
-  return SizedBox(
-    width: 70,
-    key: ValueKey(icon),
-    child: Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed ?? () {},
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                icon,
-                color: selected
-                    ? Theme.of(context).primaryColor
-                    : notifier?.isDark ?? false
-                        ? Colors.white70
-                        : Colors.black.withOpacity(0.7).withBlue(20),
-                size: 25,
-              ),
-              AnimatedContainer(
-                duration: Duration(milliseconds: 800),
-                curve: Curves.fastLinearToSlowEaseIn,
-                padding: selected ? EdgeInsets.only(top: 5) : null,
-                height: selected ? 10 : 0,
-                width: selected ? 5 : 0,
-                child: SizedBox(
-                  height: 5,
-                  child: Material(
-                    borderRadius: BorderRadius.circular(2.5),
-                    color: Colors.greenAccent[400].withOpacity(0.8),
-                  ),
-                ),
-              ),
-            ],
+  final IconData icon;
+  final bool selected;
+  final void Function() onPressed;
+
+  @override
+  _NavbarIconState createState() => _NavbarIconState();
+}
+
+class _NavbarIconState extends State<NavbarIcon> {
+  @override
+  Widget build(BuildContext context) {
+    final notifier = TaskNotifier.of(context);
+    final tapChild = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            widget.icon,
+            color: widget.selected
+                ? Theme.of(context).primaryColor
+                : notifier?.isDark ?? false
+                    ? Colors.white70
+                    : Colors.black.withOpacity(0.7).withBlue(20),
+            size: 25,
           ),
-        ),
+          AnimatedContainer(
+            duration: Duration(milliseconds: 800),
+            curve: Curves.fastLinearToSlowEaseIn,
+            padding: widget.selected ? EdgeInsets.only(top: 5) : null,
+            height: widget.selected ? 10 : 0,
+            width: widget.selected ? 5 : 0,
+            child: SizedBox(
+              height: 5,
+              child: Material(
+                borderRadius: BorderRadius.circular(2.5),
+                color: Colors.greenAccent[400].withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
       ),
-    ),
-  );
+    );
+
+    return SizedBox(
+      width: 70,
+      key: ValueKey(widget.icon),
+      child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          clipBehavior: Clip.antiAlias,
+          child: Platform.isAndroid
+              ? InkWell(
+                  onTap: widget.onPressed ?? () {},
+                  child: tapChild,
+                )
+              : CupertinoButton(
+                  onPressed: widget.onPressed ?? () {},
+                  child: tapChild,
+                )),
+    );
+  }
 }

@@ -7,6 +7,8 @@ import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
 
+import 'icon_button.dart';
+
 class TaskTile extends StatefulWidget {
   final Task task;
   final int index;
@@ -187,8 +189,14 @@ class _TaskTileState extends State<TaskTile> with TickerProviderStateMixin {
                           : Duration.zero,
                       color: isDark
                           ? Colors.transparent
-                          : _expanded ? Colors.white : Colors.transparent,
-                      elevation: isDark ? 0 : !selected && _expanded ? 12 : 0,
+                          : _expanded
+                              ? Colors.white
+                              : Colors.transparent,
+                      elevation: isDark
+                          ? 0
+                          : !selected && _expanded
+                              ? 12
+                              : 0,
                       shadowColor: isDark
                           ? Colors.transparent
                           : _expanded
@@ -672,8 +680,9 @@ class __SelectedActionsState extends State<_SelectedActions>
             parent: _deleteAnim,
             curve: curve,
           ),
-          child: IconButton(
-            icon: Icon(FeatherIcons.trash2),
+          child: TasksIconButton(
+            icon: FeatherIcons.trash2,
+            iOSHighlight: true,
             color: Theme.of(context).colorScheme.onBackground,
             iconSize: 20,
             onPressed: widget.delete ?? () {},
@@ -687,8 +696,9 @@ class __SelectedActionsState extends State<_SelectedActions>
             parent: _closeAnim,
             curve: curve,
           ),
-          child: IconButton(
-            icon: Icon(FeatherIcons.x),
+          child: TasksIconButton(
+            icon: FeatherIcons.x,
+            iOSHighlight: true,
             color: Theme.of(context).colorScheme.onBackground,
             iconSize: 20,
             onPressed: () {
@@ -809,7 +819,9 @@ class __TaskCategoryWidgetState extends State<_TaskCategoryWidget>
                         text,
                         style: Theme.of(context).textTheme.bodyText1.copyWith(
                               color: widget.selected
-                                  ? isDark ? Colors.white : color
+                                  ? isDark
+                                      ? Colors.white
+                                      : color
                                   : isDark
                                       ? Colors.white.withOpacity(0.75)
                                       : Colors.black45,

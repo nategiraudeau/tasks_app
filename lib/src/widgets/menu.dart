@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/task_category_list.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
+
+import 'icon_button.dart';
 
 @immutable
 class _MenuLink {
@@ -153,11 +158,9 @@ class _TasksAppDrawerState extends State<TasksAppDrawer>
                                 .headline6,
                           ),
                           Spacer(),
-                          IconButton(
+                          TasksIconButton(
                             iconSize: 24,
-                            icon: Icon(
-                              FeatherIcons.arrowRight,
-                            ),
+                            icon: FeatherIcons.arrowRight,
                             onPressed: widget.close ??
                                 () {
                                   Navigator.pop(context);
@@ -233,13 +236,21 @@ class _TasksAppDrawerState extends State<TasksAppDrawer>
                       _MenuItem(
                         'Dark Mode',
                         index: links.length + 1,
-                        trailing: Switch(
-                          value: notifier?.isDark,
-                          activeColor: Theme.of(context).primaryColor,
-                          onChanged: (value) {
-                            notifier?.toggleIsDark(value);
-                          },
-                        ),
+                        trailing: Platform.isAndroid
+                            ? Switch(
+                                value: notifier?.isDark,
+                                activeColor: Theme.of(context).primaryColor,
+                                onChanged: (value) {
+                                  notifier?.toggleIsDark(value);
+                                },
+                              )
+                            : CupertinoSwitch(
+                                value: notifier?.isDark,
+                                activeColor: Theme.of(context).primaryColor,
+                                onChanged: (value) {
+                                  notifier?.toggleIsDark(value);
+                                },
+                              ),
                       ),
                       Divider(
                         height: 18,

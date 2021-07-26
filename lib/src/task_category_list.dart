@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/tasks.dart';
 import 'package:tasks_app/src/theme.dart';
+import 'package:tasks_app/src/widgets/icon_button.dart';
 import 'package:tasks_app/src/widgets/task_tile.dart';
 
 import 'package:tasks_app/src/data/task.dart';
@@ -117,10 +118,8 @@ class _CategoryListState extends State<_CategoryList>
                         children: [
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: IconButton(
-                              icon: Icon(
-                                FeatherIcons.arrowLeft,
-                              ),
+                            child: TasksIconButton(
+                              icon: FeatherIcons.arrowLeft,
                               onPressed: () {
                                 Navigator.pop(context);
                               },
