@@ -680,12 +680,17 @@ class __SelectedActionsState extends State<_SelectedActions>
             parent: _deleteAnim,
             curve: curve,
           ),
-          child: TasksIconButton(
-            icon: FeatherIcons.trash2,
-            iOSHighlight: true,
-            color: Theme.of(context).colorScheme.onBackground,
-            iconSize: 20,
-            onPressed: widget.delete ?? () {},
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              highlightColor: Colors.transparent,
+            ),
+            child: TasksIconButton(
+              icon: FeatherIcons.trash2,
+              iOSHighlight: true,
+              color: Theme.of(context).colorScheme.onBackground,
+              iconSize: 20,
+              onPressed: widget.delete ?? () {},
+            ),
           ),
         ),
         SizedBox(
@@ -696,16 +701,21 @@ class __SelectedActionsState extends State<_SelectedActions>
             parent: _closeAnim,
             curve: curve,
           ),
-          child: TasksIconButton(
-            icon: FeatherIcons.x,
-            iOSHighlight: true,
-            color: Theme.of(context).colorScheme.onBackground,
-            iconSize: 20,
-            onPressed: () {
-              final notifier = TaskNotifier.of(context, listen: false);
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              highlightColor: Colors.transparent,
+            ),
+            child: TasksIconButton(
+              icon: FeatherIcons.x,
+              iOSHighlight: true,
+              color: Theme.of(context).colorScheme.onBackground,
+              iconSize: 20,
+              onPressed: () {
+                final notifier = TaskNotifier.of(context, listen: false);
 
-              notifier.unselect();
-            },
+                notifier.unselect();
+              },
+            ),
           ),
         ),
       ],

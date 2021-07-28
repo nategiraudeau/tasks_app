@@ -44,9 +44,9 @@ class _OverviewState extends State<Overview>
   }
 
   Future<void> _startAnimation() async {
-    await Future.delayed(Duration(milliseconds: 490));
+    await Future.delayed(Duration(milliseconds: 350));
     _contentAnim.forward();
-    await Future.delayed(Duration(milliseconds: 60));
+    await Future.delayed(Duration(milliseconds: 40));
     _contentAnim2.forward();
   }
 
@@ -58,14 +58,14 @@ class _OverviewState extends State<Overview>
       begin: Offset(0, 0.5),
       end: Offset.zero,
     ).chain(CurveTween(
-      curve: ElasticOutCurve(0.9),
+      curve: Curves.fastLinearToSlowEaseIn,
     ));
 
     final slideUpTween2 = Tween<Offset>(
       begin: Offset(0, 1),
       end: Offset.zero,
     ).chain(CurveTween(
-      curve: ElasticOutCurve(0.9),
+      curve: Curves.fastLinearToSlowEaseIn,
     ));
 
     final taskNotifier = TaskNotifier.of(context);
@@ -385,7 +385,9 @@ class CountOverview extends StatelessWidget {
                   ),
                   child: Card(
                     color: tappable
-                        ? isDark ? null : AppTheme.mainColor.withOpacity(0.9)
+                        ? isDark
+                            ? null
+                            : AppTheme.mainColor.withOpacity(0.9)
                         : Theme.of(context)
                             .colorScheme
                             .background
@@ -402,7 +404,7 @@ class CountOverview extends StatelessWidget {
                       onTap: !tappable
                           ? null
                           : () {
-                              showTaskCategory(context, TaskCategory.complete);
+                              // showTaskCategory(context, TaskCategory.complete);
                             },
                       child: Center(
                         child: Column(

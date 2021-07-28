@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:tasks_app/src/create_task.dart';
 import 'package:tasks_app/src/notifiers/tasks_notifier.dart';
 import 'package:tasks_app/src/overview.dart';
 import 'package:tasks_app/src/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:tasks_app/src/widgets/icon_button.dart';
 import 'package:tasks_app/src/widgets/menu.dart';
 
 import 'tasks.dart';
@@ -70,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     initialPage: 1,
   );
 
-  var _isShowingDrawer = false;
   var _hasAnimated = false;
 
   int _currentIndex = 0;
@@ -79,14 +78,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (mounted) {
       setState(() {
         _currentIndex = _pageController.page.round();
-      });
-    }
-  }
-
-  void _handleShowDrawer() {
-    if (mounted) {
-      setState(() {
-        _isShowingDrawer = _drawerPageController.page != 1.0;
       });
     }
   }
@@ -100,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _closeDrawer() {
-    _isShowingDrawer = false;
     _drawerPageController.animateToPage(
       1,
       duration: Duration(milliseconds: 240),
@@ -141,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     _pageController.addListener(_handleChangeTab);
-    _drawerPageController.addListener(_handleShowDrawer);
 
     super.initState();
   }
@@ -151,7 +140,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _pageController.removeListener(_handleChangeTab);
     _pageController.dispose();
 
-    _drawerPageController.removeListener(_handleShowDrawer);
     _drawerPageController.dispose();
 
     _slideAnim.dispose();
@@ -195,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 begin: Offset(0, 0.3),
                 end: Offset.zero,
               ).chain(CurveTween(
-                curve: ElasticOutCurve(0.9),
+                curve: Curves.fastLinearToSlowEaseIn,
               ));
 
               final isDark = notifier?.isDark ?? false;
@@ -205,10 +193,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 body: PageView(
                   controller: _drawerPageController,
                   physics: ClampingScrollPhysics(),
-                  // physics:
-                  //     _isShowingDrawer || orientation == Orientation.landscape
-                  //         ? ClampingScrollPhysics()
-                  //         : NeverScrollableScrollPhysics(),
                   children: [
                     TasksAppDrawer(
                       close: _closeDrawer,
@@ -300,26 +284,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 BorderRadius.horizontal(
                                               right: Radius.circular(40),
                                             ),
-                                            child: Material(
-                                              borderRadius:
-                                                  BorderRadius.circular(40),
-                                              clipBehavior: Clip.antiAlias,
-                                              color: Colors.transparent,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: IconButton(
-                                                  icon: Icon(
-                                                    FeatherIcons.menu,
-                                                  ),
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onBackground
-                                                      .withOpacity(0.87),
-                                                  onPressed: () {
-                                                    _showDrawer();
-                                                  },
-                                                ),
+                                            child: Center(
+                                              child: TasksIconButton(
+                                                icon: FeatherIcons.menu,
+                                                onPressed: () {
+                                                  _showDrawer();
+                                                },
                                               ),
                                             ),
                                           ),
@@ -463,7 +433,9 @@ class _NavbarIconState extends State<NavbarIcon> {
               height: 5,
               child: Material(
                 borderRadius: BorderRadius.circular(2.5),
-                color: Colors.greenAccent[400].withOpacity(0.8),
+                color: widget.selected
+                    ? Colors.greenAccent[400].withOpacity(0.8)
+                    : Colors.transparent,
               ),
             ),
           ),

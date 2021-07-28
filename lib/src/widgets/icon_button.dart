@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tasks_app/src/android_icon_button_ripple.dart';
 
 class TasksIconButton extends StatefulWidget {
   const TasksIconButton({
@@ -34,8 +35,8 @@ class _TasksIconButtonState extends State<TasksIconButton> {
     );
 
     return Material(
-      borderRadius: BorderRadius.circular(40),
-      clipBehavior: Clip.antiAlias,
+      borderRadius: Platform.isAndroid ? null : BorderRadius.circular(40),
+      clipBehavior: Platform.isAndroid ? Clip.none : Clip.antiAlias,
       color: Colors.transparent,
       child: SizedBox(
         height: 48,
@@ -44,6 +45,7 @@ class _TasksIconButtonState extends State<TasksIconButton> {
             ? InkWell(
                 child: tapChild,
                 onTap: widget.onPressed,
+                splashFactory: AndroidIconButtonRipple.splashFactory,
               )
             : SizedBox(
                 width: 48,

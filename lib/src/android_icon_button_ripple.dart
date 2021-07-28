@@ -1,45 +1,15 @@
-import 'dart:math' as math;
-
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
-const Duration _kSplashDuration = Duration(milliseconds: 820);
-const Duration _kSplashFadeDuration = Duration(milliseconds: 200);
-const Duration _kSplashFadeInDuration = Duration(milliseconds: 50);
+const Duration _kSplashDuration = Duration(milliseconds: 180);
+const Duration _kSplashFadeDuration = Duration(milliseconds: 140);
+const Duration _kSplashFadeInDuration = Duration(milliseconds: 10);
 
 const Curve _kSplashCurve = Curves.easeOutQuart;
 
-RectCallback _getClipCallback(
-    RenderBox referenceBox, bool containedInkWell, RectCallback rectCallback) {
-  if (rectCallback != null) {
-    assert(containedInkWell);
-    return rectCallback;
-  }
-  if (containedInkWell) return () => Offset.zero & referenceBox.size;
-  return null;
-}
-
-double _getTargetRadius(RenderBox referenceBox, bool containedInkWell,
-    RectCallback rectCallback, Offset position) {
-  if (containedInkWell) {
-    final Size size =
-        rectCallback != null ? rectCallback().size : referenceBox.size;
-    return _getSplashRadiusForPositionInSize(size, position);
-  }
-  return Material.defaultSplashRadius;
-}
-
-double _getSplashRadiusForPositionInSize(Size bounds, Offset position) {
-  final double d1 = (position - bounds.topLeft(Offset.zero)).distance;
-  final double d2 = (position - bounds.topRight(Offset.zero)).distance;
-  final double d3 = (position - bounds.bottomLeft(Offset.zero)).distance;
-  final double d4 = (position - bounds.bottomRight(Offset.zero)).distance;
-  return math.max(math.max(d1, d2), math.max(d3, d4)).ceilToDouble();
-}
-
-class AndroidRippleFactory extends InteractiveInkFeatureFactory {
-  const AndroidRippleFactory();
+class AndroidIconButtonRippleFactory extends InteractiveInkFeatureFactory {
+  const AndroidIconButtonRippleFactory();
 
   @override
   InteractiveInkFeature create({
@@ -55,7 +25,7 @@ class AndroidRippleFactory extends InteractiveInkFeatureFactory {
     double radius,
     VoidCallback onRemoved,
   }) {
-    return AndroidRipple(
+    return AndroidIconButtonRipple(
       controller: controller,
       referenceBox: referenceBox,
       position: position,
@@ -64,15 +34,14 @@ class AndroidRippleFactory extends InteractiveInkFeatureFactory {
       rectCallback: rectCallback,
       borderRadius: borderRadius,
       customBorder: customBorder,
-      radius: radius,
       onRemoved: onRemoved,
       textDirection: textDirection,
     );
   }
 }
 
-class AndroidRipple extends InteractiveInkFeature {
-  AndroidRipple({
+class AndroidIconButtonRipple extends InteractiveInkFeature {
+  AndroidIconButtonRipple({
     @required MaterialInkController controller,
     @required RenderBox referenceBox,
     @required TextDirection textDirection,
@@ -82,17 +51,15 @@ class AndroidRipple extends InteractiveInkFeature {
     RectCallback rectCallback,
     BorderRadius borderRadius,
     ShapeBorder customBorder,
-    double radius,
     VoidCallback onRemoved,
   })  : assert(textDirection != null),
-        _position = position,
+        _position = Offset(24, 24),
         _borderRadius = borderRadius ?? BorderRadius.zero,
         _customBorder = customBorder,
-        _targetRadius = radius ??
-            _getTargetRadius(
-                referenceBox, containedInkWell, rectCallback, position),
-        _clipCallback =
-            _getClipCallback(referenceBox, containedInkWell, rectCallback),
+        _targetRadius = 18,
+        _clipCallback = (() {
+          return Rect.fromLTRB(0, 0, 100000, 100000);
+        }),
         _repositionToReferenceBox = !containedInkWell,
         _textDirection = textDirection,
         super(
@@ -146,7 +113,7 @@ class AndroidRipple extends InteractiveInkFeature {
   AnimationController _alphaFadeInController;
 
   static const InteractiveInkFeatureFactory splashFactory =
-      AndroidRippleFactory();
+      AndroidIconButtonRippleFactory();
 
   @override
   void confirm() {

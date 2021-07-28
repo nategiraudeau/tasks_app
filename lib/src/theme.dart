@@ -82,6 +82,7 @@ class AppTheme {
     primarySwatch: Colors.grey,
     primaryColor: Colors.greenAccent[400],
     disabledColor: Colors.blueGrey[900].withGreen(100),
+    highlightColor: Colors.transparent,
   );
 
   static final dark1 = Color(0xff131517);

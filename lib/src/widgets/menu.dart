@@ -246,7 +246,8 @@ class _TasksAppDrawerState extends State<TasksAppDrawer>
                               )
                             : CupertinoSwitch(
                                 value: notifier?.isDark,
-                                activeColor: Theme.of(context).primaryColor,
+                                activeColor:
+                                    AppTheme.mainColor.withOpacity(0.95),
                                 onChanged: (value) {
                                   notifier?.toggleIsDark(value);
                                 },
