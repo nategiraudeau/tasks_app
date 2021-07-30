@@ -30,12 +30,12 @@ class _OverviewState extends State<Overview>
 
     _contentAnim = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 700),
+      duration: Duration(milliseconds: 500),
       value: widget.animate ? 0 : 1,
     );
     _contentAnim2 = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 700),
+      duration: Duration(milliseconds: 500),
       value: widget.animate ? 0 : 1,
     );
     if (widget.animate) _startAnimation();
@@ -44,9 +44,9 @@ class _OverviewState extends State<Overview>
   }
 
   Future<void> _startAnimation() async {
-    await Future.delayed(Duration(milliseconds: 350));
+    await Future.delayed(Duration(milliseconds: 400));
     _contentAnim.forward();
-    await Future.delayed(Duration(milliseconds: 40));
+    await Future.delayed(Duration(milliseconds: 50));
     _contentAnim2.forward();
   }
 
@@ -358,7 +358,7 @@ class CountOverview extends StatelessWidget {
     return SlideTransition(
       position: _contentAnim2.drive(slideUpTween),
       child: SizedBox(
-        height: 200,
+        height: MediaQuery.of(context).size.width > 590 ? 300 : 200,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -404,7 +404,7 @@ class CountOverview extends StatelessWidget {
                       onTap: !tappable
                           ? null
                           : () {
-                              // showTaskCategory(context, TaskCategory.complete);
+                              showTaskCategory(context, TaskCategory.complete);
                             },
                       child: Center(
                         child: Column(

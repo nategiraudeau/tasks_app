@@ -117,6 +117,7 @@ class AppTheme {
     splashFactory: Platform.isAndroid
         ? AndroidRipple.splashFactory
         : IOSRipple.splashFactory,
+    highlightColor: Colors.transparent,
     appBarTheme: themeData.appBarTheme.copyWith(
       color: dark1.withOpacity(0.7),
       textTheme: themeData.appBarTheme.textTheme.copyWith(

@@ -121,12 +121,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     _slideAnim = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 700),
+      duration: Duration(milliseconds: 500),
       value: widget.animate ? 0 : 1,
     );
     _contentAnim = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 700),
+      duration: Duration(milliseconds: 500),
       value: widget.animate ? 0 : 1,
     );
 
