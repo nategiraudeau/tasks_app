@@ -8,6 +8,8 @@
 
 A simple checklist app built with flutter
 
+[- Google Play Store Listing](https://play.google.com/store/apps/details?id=com.nategiraudeau.tasks_app)
+
 ---
 
 #### Screenshots
